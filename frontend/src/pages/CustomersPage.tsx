@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import api from '@/services/api';
 import type { Customer } from '@/types/api';
+import { logger } from '@/lib/logger';
 
 const CustomersPage: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -10,11 +11,7 @@ const CustomersPage: React.FC = () => {
   const [search, setSearch] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('');
 
-  useEffect(() => {
-    fetchCustomers();
-  }, [search, statusFilter]);
-
-  const fetchCustomers = async (): Promise<void> => {
+  const fetchCustomers = useCallback(async (): Promise<void> => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
@@ -24,11 +21,15 @@ const CustomersPage: React.FC = () => {
       const response = await api.get<{ data: Customer[] }>(`/customers?${params.toString()}`);
       setCustomers(response.data.data);
     } catch (error) {
-      console.error('Failed to fetch customers:', error);
+      logger.error('Failed to fetch customers', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [search, statusFilter]);
+
+  useEffect(() => {
+    fetchCustomers();
+  }, [fetchCustomers]);
 
   const getStatusBadge = (status: string): JSX.Element => {
     const colors = {

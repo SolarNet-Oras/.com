@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { MetricCard } from '@/components/ui/MetricCard';
 import { useAuth } from '@/hooks/useAuth';
 import api from '@/services/api';
+import { logger } from '@/lib/logger';
 
 interface DashboardMetrics {
   active_subscribers: number;
@@ -34,23 +35,23 @@ const NewDashboardPage: React.FC = () => {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
+  const fetchMetrics = useCallback(async (): Promise<void> => {
+    try {
+      const response = await api.get<{ data: DashboardMetrics }>('/dashboard/metrics');
+      setMetrics(response.data.data);
+    } catch (error) {
+      logger.error('Failed to fetch metrics', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchMetrics();
     // Refresh metrics every 30 seconds
     const interval = setInterval(fetchMetrics, 30000);
     return () => clearInterval(interval);
-  }, []);
-
-  const fetchMetrics = async (): Promise<void> => {
-    try {
-      const response = await api.get<{ data: DashboardMetrics }>('/dashboard/metrics');
-      setMetrics(response.data.data);
-    } catch (error) {
-      console.error('Failed to fetch metrics:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [fetchMetrics]);
 
   return (
     <DashboardLayout>

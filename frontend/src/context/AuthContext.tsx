@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useCallback } from 'react';
 import { getCurrentUser, login as loginService, logout as logoutService, register as registerService } from '@/services/authService';
 import type { User, LoginRequest, RegisterRequest } from '@/types/api';
 import { tokenStorage } from '@/lib/tokenStorage';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // Types
@@ -51,7 +52,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const userData = await getCurrentUser();
       setUser(userData);
     } catch (error) {
-      console.error('Failed to fetch user:', error);
+      logger.error('Failed to fetch user', error);
       setUser(null);
       tokenStorage.clearAll();
     } finally {
@@ -105,7 +106,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await logoutService();
       setUser(null);
     } catch (error) {
-      console.error('Logout error:', error);
+      logger.error('Logout error', error);
       setUser(null);
     } finally {
       setLoading(false);

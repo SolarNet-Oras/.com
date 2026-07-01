@@ -52,7 +52,12 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     root.classList.add(theme);
     
     // Save to localStorage
-    localStorage.setItem('theme', theme);
+    try {
+      localStorage.setItem('theme', theme);
+    } catch (error) {
+      // Handle localStorage errors gracefully
+      console.warn('Failed to save theme preference:', error);
+    }
   }, [theme]);
 
   const setTheme = (newTheme: Theme): void => {

@@ -43,12 +43,11 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:api')->group(function () {
         // User routes
         Route::apiResource('users', UserController::class);
+        Route::post('users/{user}/roles', [UserController::class, 'assignRoles']);
         
         // Role routes
         Route::apiResource('roles', RoleController::class);
-        
-        // Additional role routes
         Route::post('roles/{role}/permissions', [RoleController::class, 'syncPermissions']);
-        Route::post('users/{user}/roles', [UserController::class, 'assignRoles']);
+        Route::get('permissions', [RoleController::class, 'permissions']);
     });
 });

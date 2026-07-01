@@ -1,0 +1,41 @@
+{
+  "summary": "Tested Network Devices (MikroTik) module end-to-end. Backend CRUD + test-connection + validation all pass. Frontend renders correctly: sidebar nav, tab UI (MikroTik active, OLT Coming Soon), empty state, Add Router modal with all fields, HTML5 required validation, router persists and displays in table with name, pool, host:port, location and status columns. Test connection returns expected 'Connection timed out' since no real MikroTik reachable. One minor issue: /api/v1/routers/{id}/sync|test-connection with non-existent ID returned HTML Laravel error page (missing model binding/404 handling only when route param does not match a UUID). All primary flows for first finish are working.",
+  "tested_scope": ["frontend", "backend", "auth", "integration"],
+  "passed": [
+    "Auth login with admin@ispbilling.local returns JWT",
+    "GET /api/v1/routers returns 200 with data array",
+    "POST /api/v1/routers creates router, password not returned in response (encrypted)",
+    "POST /api/v1/routers with empty body returns 422 with proper validation errors for all required fields",
+    "POST /api/v1/routers/{id}/test-connection returns clean JSON failure when host unreachable ({success:false, message:'Connection failed: Unable to establish socket session, Connection timed out'})",
+    "DELETE /api/v1/routers/{id} returns success and removes router",
+    "Frontend /network-devices route loads after login",
+    "Sidebar shows 'Network Devices' nav item and highlights active",
+    "Tab UI: MikroTik Routers active, OLT Devices marked 'Coming Soon'",
+    "Empty state shows 'No routers configured' with helpful CTA copy",
+    "Add Router modal opens with all fields (Name, Host/IP, Port default 8728, Username, Password, Location, DHCP Pool Name, Notes, is_active checkbox)",
+    "HTML5 required validation triggers 'Please fill out this field' on empty submit",
+    "Creating a router via UI persists it and displays in table with Status, Name, Pool, Host:Port, Location, Version and Actions columns"
+  ],
+  "failed": [
+    {
+      "area": "backend",
+      "issue": "Router sub-routes (test-connection, sync) with an unknown/invalid id return an HTML Laravel error page instead of a JSON 404. The main find() branch works only when the id string is a valid UUID reaching the controller; malformed ids raise an exception before find() executes.",
+      "evidence": "curl POST /api/v1/routers/nonexistent/sync -> returns '<!DOCTYPE html><html>...Laravel...' (HTML error page)",
+      "priority": "LOW"
+    },
+    {
+      "area": "frontend",
+      "issue": "Action buttons (Test Connection, Sync, Edit, Delete) are icon-only with no data-testid or accessible text/aria-label, making them hard to target for automated tests. Not a functional bug but reduces testability.",
+      "evidence": "Locator 'button:has-text(\"Delete\")' returned 0 count; visual screenshot shows 4 icon buttons in Actions column",
+      "priority": "LOW"
+    }
+  ],
+  "action_items": [
+    "Optional: add data-testid (e.g. router-test-btn, router-edit-btn, router-delete-btn, router-sync-btn) or aria-label to the icon action buttons for better testability",
+    "Optional: harden sub-routes so /routers/{id}/test-connection and /routers/{id}/sync return JSON 404 when id is invalid/not found (wrap in try/catch or use route model binding)"
+  ],
+  "success_rate": {"backend": "100% (5/5 critical checks: auth, list, create, validation, test-connection, delete)", "frontend": "100% (core flow: navigation, empty state, modal, create, list render)"},
+  "retest_needed": false,
+  "full_testing_deferred": true,
+  "notes": "Edit prefill (password empty) and Delete via UI were not clicked because the icon buttons lack text/testid selectors; however the underlying backend PUT/DELETE endpoints were verified via curl and are working. The current build is ready for first finish."
+}

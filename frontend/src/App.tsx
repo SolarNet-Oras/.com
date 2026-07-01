@@ -8,6 +8,7 @@ import LoginPage from '@/pages/LoginPage';
 import NewDashboardPage from '@/pages/NewDashboardPage';
 import CustomersPage from '@/pages/CustomersPage';
 import CreateCustomerPage from '@/pages/CreateCustomerPage';
+import { NetworkDevicesPage } from '@/pages/NetworkDevicesPage';
 
 // ============================================================================
 // Main App Component
@@ -45,6 +46,14 @@ const App: React.FC = (): JSX.Element => {
                 element={
                   <ProtectedRoute>
                     <CreateCustomerPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/network-devices"
+                element={
+                  <ProtectedRoute>
+                    <NetworkDevicesPage />
                   </ProtectedRoute>
                 }
               />

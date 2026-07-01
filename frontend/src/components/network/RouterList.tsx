@@ -1,0 +1,196 @@
+import { useState } from 'react';
+import { type Router, routerService } from '@/services/routerService';
+import { Wifi, WifiOff, Circle, TestTube, RefreshCw, Edit, Trash2 } from 'lucide-react';
+
+interface RouterListProps {
+  routers: Router[];
+  onEdit: (router: Router) => void;
+  onDelete: (id: string) => void;
+  onTestConnection: (id: string) => void;
+  onSync: (id: string) => void;
+}
+
+export function RouterList({ routers, onEdit, onDelete, onTestConnection, onSync }: RouterListProps) {
+  const [testingId, setTestingId] = useState<string | null>(null);
+  const [testResult, setTestResult] = useState<{ id: string; success: boolean; message: string } | null>(null);
+  const [syncingId, setSyncingId] = useState<string | null>(null);
+
+  const handleTest = async (id: string) => {
+    setTestingId(id);
+    setTestResult(null);
+    
+    try {
+      const result = await routerService.testConnection(id);
+      setTestResult({ id, success: result.success, message: result.message });
+      onTestConnection(id);
+    } catch (error: any) {
+      setTestResult({ id, success: false, message: error.message || 'Test failed' });
+    } finally {
+      setTestingId(null);
+      setTimeout(() => setTestResult(null), 5000);
+    }
+  };
+
+  const handleSync = async (id: string) => {
+    setSyncingId(id);
+    try {
+      await routerService.sync(id);
+      onSync(id);
+    } catch (error) {
+      console.error('Sync failed:', error);
+    } finally {
+      setSyncingId(null);
+    }
+  };
+
+  const getStatusIcon = (status: Router['connection_status']) => {
+    switch (status) {
+      case 'online':
+        return <Wifi className="h-5 w-5 text-green-600" />;
+      case 'offline':
+        return <WifiOff className="h-5 w-5 text-red-600" />;
+      default:
+        return <Circle className="h-5 w-5 text-gray-400" />;
+    }
+  };
+
+  const getStatusBadge = (status: Router['connection_status']) => {
+    const colors = {
+      online: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+      offline: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+      unknown: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
+    };
+    return (
+      <span className={`px-2 py-1 rounded text-xs font-medium ${colors[status]}`}>
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </span>
+    );
+  };
+
+  if (routers.length === 0) {
+    return (
+      <div className="bg-card border border-border rounded-lg p-12 text-center">
+        <Wifi className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-foreground mb-2">No routers configured</h3>
+        <p className="text-muted-foreground">
+          Add your first MikroTik router to start managing your network.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-card border border-border rounded-lg overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-muted">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Status
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Name
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Host:Port
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Location
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Version
+              </th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {routers.map((router) => (
+              <tr key={router.id} className="hover:bg-muted/50 transition-colors">
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center space-x-2">
+                    {getStatusIcon(router.connection_status)}
+                    {getStatusBadge(router.connection_status)}
+                  </div>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="text-sm font-medium text-foreground">{router.name}</div>
+                  {router.dhcp_pool_name && (
+                    <div className="text-xs text-muted-foreground">Pool: {router.dhcp_pool_name}</div>
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-foreground">{router.host}:{router.port}</div>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="text-sm text-muted-foreground">{router.location || '-'}</div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-muted-foreground">{router.routeros_version || '-'}</div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <div className="flex items-center justify-end space-x-2">
+                    <button
+                      onClick={() => handleTest(router.id)}
+                      disabled={testingId === router.id}
+                      className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors disabled:opacity-50"
+                      title="Test Connection"
+                    >
+                      {testingId === router.id ? (
+                        <div className="animate-spin h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full" />
+                      ) : (
+                        <TestTube className="h-4 w-4" />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => handleSync(router.id)}
+                      disabled={syncingId === router.id}
+                      className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors disabled:opacity-50"
+                      title="Sync Now"
+                    >
+                      {syncingId === router.id ? (
+                        <div className="animate-spin h-4 w-4 border-2 border-green-600 border-t-transparent rounded-full" />
+                      ) : (
+                        <RefreshCw className="h-4 w-4" />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => onEdit(router)}
+                      className="p-2 text-foreground hover:bg-secondary rounded transition-colors"
+                      title="Edit Router"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => onDelete(router.id)}
+                      className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                      title="Delete Router"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      
+      {/* Test Result Toast */}
+      {testResult && (
+        <div className={`m-4 p-4 rounded-lg border ${
+          testResult.success 
+            ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' 
+            : 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800'
+        }`}>
+          <p className={`text-sm font-medium ${
+            testResult.success ? 'text-green-800 dark:text-green-200' : 'text-red-800 dark:text-red-200'
+          }`}>
+            {testResult.message}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}

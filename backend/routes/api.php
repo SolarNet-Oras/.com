@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CustomerController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\RoleController;
+use App\Http\Controllers\Api\V1\RouterController;
 use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -59,5 +60,10 @@ Route::prefix('v1')->group(function () {
         // Customer routes
         Route::apiResource('customers', CustomerController::class);
         Route::get('customers-statistics', [CustomerController::class, 'statistics']);
+        
+        // Router routes (MikroTik)
+        Route::apiResource('routers', RouterController::class);
+        Route::post('routers/{id}/test-connection', [RouterController::class, 'testConnection']);
+        Route::post('routers/{id}/sync', [RouterController::class, 'sync']);
     });
 });

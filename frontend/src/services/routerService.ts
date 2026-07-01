@@ -1,0 +1,82 @@
+import { api } from './api';
+
+export interface Router {
+  id: string;
+  name: string;
+  host: string;
+  port: number;
+  username: string;
+  location?: string;
+  notes?: string;
+  dhcp_pool_name?: string;
+  is_active: boolean;
+  connection_status: 'online' | 'offline' | 'unknown';
+  routeros_version?: string;
+  last_connected_at?: string;
+  last_sync_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateRouterData {
+  name: string;
+  host: string;
+  port: number;
+  username: string;
+  password: string;
+  location?: string;
+  notes?: string;
+  dhcp_pool_name?: string;
+  is_active?: boolean;
+}
+
+export interface UpdateRouterData extends Partial<CreateRouterData> {}
+
+export interface TestConnectionResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    version: string;
+    uptime: string;
+    cpu_load: string;
+    free_memory: string;
+    total_memory: string;
+    board_name: string;
+  };
+}
+
+export const routerService = {
+  async getAll(): Promise<Router[]> {
+    const response = await api.get<{ success: boolean; data: Router[] }>('/routers');
+    return response.data.data;
+  },
+
+  async getOne(id: string): Promise<Router> {
+    const response = await api.get<{ success: boolean; data: Router }>(`/routers/${id}`);
+    return response.data.data;
+  },
+
+  async create(data: CreateRouterData): Promise<Router> {
+    const response = await api.post<{ success: boolean; data: Router }>('/routers', data);
+    return response.data.data;
+  },
+
+  async update(id: string, data: UpdateRouterData): Promise<Router> {
+    const response = await api.put<{ success: boolean; data: Router }>(`/routers/${id}`, data);
+    return response.data.data;
+  },
+
+  async delete(id: string): Promise<void> {
+    await api.delete(`/routers/${id}`);
+  },
+
+  async testConnection(id: string): Promise<TestConnectionResponse> {
+    const response = await api.post<TestConnectionResponse>(`/routers/${id}/test-connection`);
+    return response.data;
+  },
+
+  async sync(id: string): Promise<{ success: boolean; message: string }> {
+    const response = await api.post<{ success: boolean; message: string }>(`/routers/${id}/sync`);
+    return response.data;
+  },
+};

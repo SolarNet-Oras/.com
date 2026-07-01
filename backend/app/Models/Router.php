@@ -10,5 +10,58 @@ class Router extends Model
 {
     use HasFactory, HasUuids;
 
-    protected $fillable = ['name', 'ip_address'];
+    protected $fillable = [
+        'name',
+        'host',
+        'port',
+        'username',
+        'password',
+        'location',
+        'notes',
+        'dhcp_pool_name',
+        'is_active',
+        'connection_status',
+        'routeros_version',
+        'last_connected_at',
+        'last_sync_at',
+    ];
+
+    protected $hidden = [
+        'password',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+        'port' => 'integer',
+        'last_connected_at' => 'datetime',
+        'last_sync_at' => 'datetime',
+    ];
+
+    /**
+     * Encrypt password before saving
+     */
+    public function setPasswordAttribute($value): void
+    {
+        $this->attributes['password'] = encrypt($value);
+    }
+
+    /**
+     * Decrypt password when accessing
+     */
+    public function getPasswordAttribute($value): ?string
+    {
+        return $value ? decrypt($value) : null;
+    }
+
+    /**
+     * Get connection status with icon
+     */
+    public function getStatusIconAttribute(): string
+    {
+        return match($this->connection_status) {
+            'online' => '🟢',
+            'offline' => '🔴',
+            default => '⚪',
+        };
+    }
 }

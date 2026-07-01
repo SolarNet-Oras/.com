@@ -7,6 +7,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import LoginPage from '@/pages/LoginPage';
 import NewDashboardPage from '@/pages/NewDashboardPage';
 import CustomersPage from '@/pages/CustomersPage';
+import CreateCustomerPage from '@/pages/CreateCustomerPage';
 
 // ============================================================================
 // Main App Component
@@ -36,6 +37,14 @@ const App: React.FC = (): JSX.Element => {
                 element={
                   <ProtectedRoute>
                     <CustomersPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/customers/create"
+                element={
+                  <ProtectedRoute>
+                    <CreateCustomerPage />
                   </ProtectedRoute>
                 }
               />

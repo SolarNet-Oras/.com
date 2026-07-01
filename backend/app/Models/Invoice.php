@@ -2,9 +2,85 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Invoice extends Model
 {
-    //
+    use HasFactory, HasUuids;
+
+    protected $fillable = [
+        'invoice_number',
+        'customer_id',
+        'issue_date',
+        'due_date',
+        'billing_period_start',
+        'billing_period_end',
+        'subtotal',
+        'tax',
+        'discount',
+        'total',
+        'paid_amount',
+        'balance',
+        'status',
+        'notes',
+        'sent_at',
+        'paid_at',
+    ];
+
+    protected $casts = [
+        'issue_date' => 'date',
+        'due_date' => 'date',
+        'billing_period_start' => 'date',
+        'billing_period_end' => 'date',
+        'subtotal' => 'decimal:2',
+        'tax' => 'decimal:2',
+        'discount' => 'decimal:2',
+        'total' => 'decimal:2',
+        'paid_amount' => 'decimal:2',
+        'balance' => 'decimal:2',
+        'sent_at' => 'datetime',
+        'paid_at' => 'datetime',
+    ];
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(InvoiceItem::class);
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function isOverdue(): bool
+    {
+        return $this->due_date->isPast() && $this->balance > 0;
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->status === 'paid' && $this->balance <= 0;
+    }
+
+    public function scopeOverdue($query)
+    {
+        return $query->where('due_date', '<', now())
+                    ->where('balance', '>', 0)
+                    ->whereIn('status', ['sent', 'partial']);
+    }
+
+    public function scopeUnpaid($query)
+    {
+        return $query->where('balance', '>', 0)
+                    ->whereIn('status', ['sent', 'partial', 'overdue']);
+    }
 }

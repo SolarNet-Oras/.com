@@ -10,6 +10,7 @@ import CustomersPage from '@/pages/CustomersPage';
 import CreateCustomerPage from '@/pages/CreateCustomerPage';
 import { NetworkDevicesPage } from '@/pages/NetworkDevicesPage';
 import { ServicePlansPage } from '@/pages/ServicePlansPage';
+import InvoicesPage from '@/pages/InvoicesPage';
 
 // ============================================================================
 // Main App Component
@@ -63,6 +64,14 @@ const App: React.FC = (): JSX.Element => {
                 element={
                   <ProtectedRoute>
                     <ServicePlansPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/billing"
+                element={
+                  <ProtectedRoute>
+                    <InvoicesPage />
                   </ProtectedRoute>
                 }
               />

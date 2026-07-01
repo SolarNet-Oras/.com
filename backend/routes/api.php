@@ -3,6 +3,8 @@
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CustomerController;
 use App\Http\Controllers\Api\V1\DashboardController;
+use App\Http\Controllers\Api\V1\InvoiceController;
+use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\RoleController;
 use App\Http\Controllers\Api\V1\RouterController;
 use App\Http\Controllers\Api\V1\ServicePlanController;
@@ -75,5 +77,18 @@ Route::prefix('v1')->group(function () {
         
         // Service Plans routes
         Route::apiResource('service-plans', ServicePlanController::class);
+        
+        // Invoice routes
+        Route::apiResource('invoices', InvoiceController::class);
+        Route::get('invoices-statistics', [InvoiceController::class, 'statistics']);
+        Route::post('invoices/{id}/mark-sent', [InvoiceController::class, 'markAsSent']);
+        Route::post('invoices/{id}/payments', [InvoiceController::class, 'recordPayment']);
+        Route::get('invoices/{id}/pdf', [InvoiceController::class, 'downloadPdf']);
+        Route::post('invoices/generate-recurring', [InvoiceController::class, 'generateRecurring']);
+        
+        // Payment routes
+        Route::get('payments', [PaymentController::class, 'index']);
+        Route::get('payments/{id}', [PaymentController::class, 'show']);
+        Route::get('payments-statistics', [PaymentController::class, 'statistics']);
     });
 });

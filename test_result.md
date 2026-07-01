@@ -98,6 +98,128 @@
 
 
 
+user_problem_statement: "Enterprise ISP Billing & Network Management System for MikroTik IPoE with complete invoicing and payments module. Company branding: 'Solarnet Internet'. Tax: 8% VAT. Payment methods: Cash, Bank Transfer, Credit/Debit Card, Mobile Money."
+
+backend:
+  - task: "Invoice Generation API"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/app/Http/Controllers/Api/V1/InvoiceController.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented complete Invoice REST API with CRUD endpoints, PDF generation, payment recording, and statistics. Applied 8% VAT and 'Solarnet Internet' branding. Needs testing."
+
+  - task: "Invoice Service Logic"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/app/Services/InvoiceService.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented invoice generation with automatic invoice numbering, tax calculation (8% VAT), payment recording, PDF generation using dompdf, and company branding ('Solarnet Internet'). Needs testing."
+
+  - task: "Payment Recording API"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/app/Http/Controllers/Api/V1/PaymentController.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented Payment API with listing, statistics, and filtering. Payment recording integrated into InvoiceController. Supports Cash, Bank Transfer, Credit/Debit Card, Mobile Money, and Other. Needs testing."
+
+  - task: "Invoice PDF Template"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/resources/views/invoices/pdf.blade.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created professional PDF invoice template with 'Solarnet Internet' branding, 8% VAT display, payment history, and company details. Needs testing."
+
+frontend:
+  - task: "Invoices Management Page"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/InvoicesPage.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented complete Invoices page with listing, filtering, invoice generation modal, payment recording modal, view details modal, PDF download, mark as sent functionality. Integrated with DashboardLayout. Needs testing."
+
+  - task: "Invoice Service Integration"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/services/invoiceService.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created invoiceService with all CRUD operations, payment recording, PDF download, recurring invoice generation, and statistics. Needs testing."
+
+  - task: "Payment Service Integration"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/services/paymentService.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created paymentService with listing, filtering, and statistics. Needs testing."
+
+  - task: "TypeScript Types for Invoicing"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/types/api.ts"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Updated Invoice and Payment TypeScript interfaces to match backend schema. Added InvoiceItem, CreateInvoiceRequest, RecordPaymentRequest, InvoiceStatistics, and PaymentStatistics types. Needs testing."
+
+metadata:
+  created_by: "main_agent"
+  version: "2.0"
+  test_sequence: 1
+  run_ui: true
+
+test_plan:
+  current_focus:
+    - "Invoice Generation API"
+    - "Invoice Service Logic"
+    - "Payment Recording API"
+    - "Invoices Management Page"
+    - "Invoice Service Integration"
+    - "Invoice PDF Template"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "Phase 6 (Invoicing & Payments) implementation complete. Backend includes full Invoice/Payment REST APIs with 8% VAT calculation, 'Solarnet Internet' branding, PDF generation (dompdf), and payment recording for all requested payment methods (Cash, Bank Transfer, Credit/Debit Card, Mobile Money, Other). Frontend includes comprehensive InvoicesPage with invoice listing, generation, payment recording, PDF download, filtering, and modal-based UI. All services, controllers, routes, and TypeScript types have been created. The /billing route is now active in the navigation. Test credentials: admin@ispbilling.local / password. Please test all invoice and payment flows including: 1) Invoice generation for customers with service plans, 2) Adding additional items to invoices, 3) Recording payments via different methods, 4) PDF download, 5) Invoice status transitions (draft->sent->partial->paid), 6) Statistics endpoints, 7) Frontend UI interactions."
+
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================

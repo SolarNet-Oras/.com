@@ -4,7 +4,7 @@
  * Centralized type definitions for API requests and responses
  */
 
-import { AxiosError, AxiosResponse } from 'axios';
+import type { AxiosError, AxiosResponse } from 'axios';
 
 // ============================================================================
 // Base Types
@@ -249,28 +249,104 @@ export interface DhcpLease {
 // Invoice & Payment Types
 // ============================================================================
 
-export interface Invoice {
+export interface InvoiceItem {
   id: string;
-  customer_id: string;
-  invoice_number: string;
-  amount: number;
-  due_date: string;
-  status: 'pending' | 'paid' | 'overdue' | 'cancelled';
+  invoice_id: string;
+  description: string;
+  quantity: number;
+  unit_price: number;
+  total: number;
   created_at: string;
   updated_at: string;
 }
 
-export interface Payment {
+export interface Invoice {
   id: string;
-  invoice_id: string;
+  invoice_number: string;
   customer_id: string;
-  amount: number;
-  payment_method: 'cash' | 'gcash' | 'maya' | 'bank_transfer' | 'voucher';
-  reference_number: string | null;
-  status: 'completed' | 'pending' | 'failed';
-  paid_at: string;
+  customer?: Customer;
+  issue_date: string;
+  due_date: string;
+  billing_period_start: string;
+  billing_period_end: string;
+  subtotal: number;
+  tax: number;
+  discount: number;
+  total: number;
+  paid_amount: number;
+  balance: number;
+  status: 'draft' | 'sent' | 'partial' | 'paid' | 'overdue' | 'cancelled';
+  notes: string | null;
+  sent_at: string | null;
+  paid_at: string | null;
+  items?: InvoiceItem[];
+  payments?: Payment[];
   created_at: string;
   updated_at: string;
+}
+
+export interface CreateInvoiceRequest {
+  customer_id: string;
+  billing_period_start: string;
+  billing_period_end: string;
+  due_days?: number;
+  discount?: number;
+  notes?: string;
+  additional_items?: {
+    description: string;
+    quantity?: number;
+    unit_price: number;
+  }[];
+}
+
+export interface Payment {
+  id: string;
+  payment_number: string;
+  invoice_id: string;
+  customer_id: string;
+  invoice?: Invoice;
+  customer?: Customer;
+  amount: number;
+  payment_method: 'cash' | 'bank_transfer' | 'credit_card' | 'debit_card' | 'mobile_money' | 'other';
+  payment_date: string;
+  transaction_id: string | null;
+  reference: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RecordPaymentRequest {
+  amount: number;
+  payment_method: 'cash' | 'bank_transfer' | 'credit_card' | 'debit_card' | 'mobile_money' | 'other';
+  payment_date?: string;
+  transaction_id?: string;
+  reference?: string;
+  notes?: string;
+}
+
+export interface InvoiceStatistics {
+  total_invoices: number;
+  total_amount: number;
+  paid_amount: number;
+  unpaid_amount: number;
+  overdue_count: number;
+  overdue_amount: number;
+  status_breakdown: {
+    status: string;
+    count: number;
+    total: number;
+  }[];
+}
+
+export interface PaymentStatistics {
+  total_payments: number;
+  total_amount: number;
+  method_breakdown: {
+    payment_method: string;
+    count: number;
+    total: number;
+  }[];
 }
 
 // ============================================================================

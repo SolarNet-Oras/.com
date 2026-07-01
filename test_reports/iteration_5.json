@@ -1,0 +1,47 @@
+{
+  "summary": "Phase 6 (Invoicing & Payments) first-test run. Backend auth works and invoice/payment list & statistics endpoints return 200 with correct schema on an empty DB. However, two CRITICAL blockers prevent end-to-end testing: (1) PHP ParseError in CustomerController.php line 194 (statistics() method body is unterminated) breaks ALL customer endpoints — cannot create/list customers, so cannot generate invoices; (2) Frontend fails to boot with a Vite module-resolution error: '/src/types/api.ts does not provide an export named CreateInvoiceRequest' — the /billing page (and every other page) renders as blank white. DB is also empty (0 customers, 0 plans, 0 invoices).",
+  "tested_scope": ["backend", "frontend", "auth", "integration"],
+  "passed": [
+    "POST /api/v1/auth/login returns 200 with access_token for admin@ispbilling.local",
+    "GET /api/v1/invoices returns 200 with paginated shape (empty data)",
+    "GET /api/v1/invoices-statistics returns 200 with fields total_invoices, total_amount, paid_amount, unpaid_amount, overdue_count, overdue_amount, status_breakdown",
+    "GET /api/v1/payments returns 200 with paginated shape",
+    "GET /api/v1/payments-statistics returns 200 with total_payments, total_amount, method_breakdown",
+    "GET /api/v1/service-plans returns 200 (empty)"
+  ],
+  "failed": [
+    {
+      "area": "backend / CustomerController",
+      "issue": "Fatal PHP ParseError: 'syntax error, unexpected token \"public\", expecting \"]\"' at /app/backend/app/Http/Controllers/Api/V1/CustomerController.php:194. The statistics() method (lines 184-189) opens an array with `$stats = [ 'total' => ..., 'active' => ..., ` but is never closed — the file jumps straight into the syncQueue() docblock/method. This breaks routing/middleware loading of the controller entirely.",
+      "evidence": "curl GET /api/v1/customers -> 500 ParseError; view of CustomerController.php lines 184-208 shows unterminated array literal after 'active' => Customer::active()->count(), (no closing `];` or `}` for the method).",
+      "priority": "HIGH"
+    },
+    {
+      "area": "frontend / Vite dev build",
+      "issue": "App renders a blank white page on every route (including /login and /billing). Console has pageerror: \"The requested module '/src/types/api.ts' does not provide an export named 'CreateInvoiceRequest'\". CreateInvoiceRequest IS declared at api.ts:288, but tsconfig has verbatimModuleSyntax: true and invoiceService.ts imports it as a value (`import { ..., CreateInvoiceRequest, ... }` instead of `import type`). This prevents the whole module graph from resolving.",
+      "evidence": "GET / returns HTML shell (Vite dev), but body.innerText is '' and page.on('pageerror') captured the export-not-found error. Screenshot of / is a blank white viewport.",
+      "priority": "HIGH"
+    },
+    {
+      "area": "test data / DB seed",
+      "issue": "Database has 0 customers, 0 service plans, 0 invoices. Even if the two bugs above are fixed, there is no seed data to exercise invoice generation, payment recording, PDF download, or status filters.",
+      "evidence": "php artisan tinker: customers: 0 plans: 0 invoices: 0",
+      "priority": "HIGH"
+    },
+    {
+      "area": "supervisor",
+      "issue": "supervisorctl shows 'backend' and 'frontend' as FATAL (Exited too quickly). The actually-running services are 'laravel' and 'isp_frontend'. Not a functional blocker for this test but worth noting for hygiene.",
+      "evidence": "supervisorctl status: backend FATAL, frontend FATAL, laravel RUNNING, isp_frontend RUNNING",
+      "priority": "LOW"
+    }
+  ],
+  "action_items": [
+    "Fix CustomerController::statistics() — close the $stats array and method body (add remaining fields like inactive/suspended if intended, then `]; return response()->json(...);` and a closing `}`).",
+    "Fix frontend imports for type-only symbols under verbatimModuleSyntax: change `import { ..., CreateInvoiceRequest, RecordPaymentRequest, InvoiceStatistics, PaginatedResponse, ... }` in invoiceService.ts / paymentService.ts / InvoicesPage.tsx to `import type { ... }` (or split value vs type imports). Verify by loading /billing without console errors.",
+    "Seed at least 1 service plan and 1 customer with an assigned plan (and ideally a draft/sent invoice) so the invoice lifecycle can be exercised end-to-end.",
+    "After the above are green, retest: invoice generation (INV-YYYYMM-XXXX + 8% VAT + Solarnet branding), payment recording across all 6 methods, status transitions draft->sent->partial->paid, PDF download, statistics, and frontend filter/search/modals."
+  ],
+  "success_rate": {"backend": "55%", "frontend": "0%"},
+  "retest_needed": true,
+  "full_testing_deferred": true
+}

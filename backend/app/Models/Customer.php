@@ -37,6 +37,9 @@ class Customer extends Model
         'technician_id',
         'notes',
         'documents',
+        'queue_synced',
+        'queue_last_synced_at',
+        'queue_sync_status',
     ];
 
     /**
@@ -51,6 +54,8 @@ class Customer extends Model
             'documents' => 'array',
             'monthly_fee' => 'decimal:2',
             'installation_date' => 'date',
+            'queue_synced' => 'boolean',
+            'queue_last_synced_at' => 'datetime',
         ];
     }
 

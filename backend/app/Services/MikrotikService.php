@@ -139,3 +139,246 @@ class MikrotikService
         }
     }
 }
+
+
+
+    /**
+     * Add a simple queue for a customer
+     * 
+     * @param Router $router
+     * @param array $queueData
+     * @return array{success: bool, message: string, queue_id: string|null}
+     */
+    public function addQueue(Router $router, array $queueData): array
+    {
+        try {
+            $config = (new Config())
+                ->set('host', $router->host)
+                ->set('user', $router->username)
+                ->set('pass', $router->password)
+                ->set('port', $router->port);
+
+            $client = new Client($config);
+            
+            // Build queue parameters
+            $params = [
+                'name' => $queueData['name'],
+                'target' => $queueData['target'], // IP address
+                'max-limit' => $queueData['max_limit'], // e.g., "100M/50M"
+                'comment' => $queueData['comment'] ?? '',
+            ];
+            
+            // Add burst if provided
+            if (!empty($queueData['burst_limit'])) {
+                $params['burst-limit'] = $queueData['burst_limit'];
+                $params['burst-threshold'] = $queueData['burst_threshold'];
+                $params['burst-time'] = $queueData['burst_time'];
+            }
+            
+            // Add priority if provided
+            if (!empty($queueData['priority'])) {
+                $params['priority'] = $queueData['priority'] . '/' . $queueData['priority'];
+            }
+            
+            // Create the queue
+            $query = (new Query('/queue/simple/add'));
+            foreach ($params as $key => $value) {
+                $query->equal($key, $value);
+            }
+            
+            $response = $client->query($query)->read();
+            
+            // Get the ID of created queue
+            $queueId = $response[0]['after']['ret'] ?? null;
+            
+            Log::info('Queue created on MikroTik', [
+                'router' => $router->name,
+                'queue_name' => $queueData['name'],
+                'target' => $queueData['target'],
+                'queue_id' => $queueId,
+            ]);
+            
+            return [
+                'success' => true,
+                'message' => 'Queue created successfully',
+                'queue_id' => $queueId,
+            ];
+            
+        } catch (Exception $e) {
+            Log::error('Failed to create queue on MikroTik', [
+                'router' => $router->name,
+                'error' => $e->getMessage(),
+                'queue_data' => $queueData,
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => 'Failed to create queue: ' . $e->getMessage(),
+                'queue_id' => null,
+            ];
+        }
+    }
+
+    /**
+     * Update an existing queue
+     * 
+     * @param Router $router
+     * @param string $queueName
+     * @param array $updates
+     * @return array{success: bool, message: string}
+     */
+    public function updateQueue(Router $router, string $queueName, array $updates): array
+    {
+        try {
+            $config = (new Config())
+                ->set('host', $router->host)
+                ->set('user', $router->username)
+                ->set('pass', $router->password)
+                ->set('port', $router->port);
+
+            $client = new Client($config);
+            
+            // Find the queue by name
+            $query = (new Query('/queue/simple/print'))
+                ->where('name', $queueName);
+            $queues = $client->query($query)->read();
+            
+            if (empty($queues)) {
+                return [
+                    'success' => false,
+                    'message' => 'Queue not found: ' . $queueName,
+                ];
+            }
+            
+            $queueId = $queues[0]['.id'];
+            
+            // Build update query
+            $query = (new Query('/queue/simple/set'))
+                ->equal('.id', $queueId);
+            
+            foreach ($updates as $key => $value) {
+                $query->equal($key, $value);
+            }
+            
+            $client->query($query)->read();
+            
+            Log::info('Queue updated on MikroTik', [
+                'router' => $router->name,
+                'queue_name' => $queueName,
+                'updates' => $updates,
+            ]);
+            
+            return [
+                'success' => true,
+                'message' => 'Queue updated successfully',
+            ];
+            
+        } catch (Exception $e) {
+            Log::error('Failed to update queue on MikroTik', [
+                'router' => $router->name,
+                'queue_name' => $queueName,
+                'error' => $e->getMessage(),
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => 'Failed to update queue: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Remove a queue
+     * 
+     * @param Router $router
+     * @param string $queueName
+     * @return array{success: bool, message: string}
+     */
+    public function removeQueue(Router $router, string $queueName): array
+    {
+        try {
+            $config = (new Config())
+                ->set('host', $router->host)
+                ->set('user', $router->username)
+                ->set('pass', $router->password)
+                ->set('port', $router->port);
+
+            $client = new Client($config);
+            
+            // Find the queue by name
+            $query = (new Query('/queue/simple/print'))
+                ->where('name', $queueName);
+            $queues = $client->query($query)->read();
+            
+            if (empty($queues)) {
+                return [
+                    'success' => true, // Already removed
+                    'message' => 'Queue already removed or not found',
+                ];
+            }
+            
+            $queueId = $queues[0]['.id'];
+            
+            // Remove the queue
+            $query = (new Query('/queue/simple/remove'))
+                ->equal('.id', $queueId);
+            
+            $client->query($query)->read();
+            
+            Log::info('Queue removed from MikroTik', [
+                'router' => $router->name,
+                'queue_name' => $queueName,
+            ]);
+            
+            return [
+                'success' => true,
+                'message' => 'Queue removed successfully',
+            ];
+            
+        } catch (Exception $e) {
+            Log::error('Failed to remove queue from MikroTik', [
+                'router' => $router->name,
+                'queue_name' => $queueName,
+                'error' => $e->getMessage(),
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => 'Failed to remove queue: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Get all queues from router
+     * 
+     * @param Router $router
+     * @return array
+     */
+    public function getQueues(Router $router): array
+    {
+        try {
+            $config = (new Config())
+                ->set('host', $router->host)
+                ->set('user', $router->username)
+                ->set('pass', $router->password)
+                ->set('port', $router->port);
+
+            $client = new Client($config);
+            
+            $query = new Query('/queue/simple/print');
+            $queues = $client->query($query)->read();
+            
+            return [
+                'success' => true,
+                'data' => $queues,
+            ];
+            
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage(),
+                'data' => [],
+            ];
+        }
+    }

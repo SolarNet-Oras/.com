@@ -4,12 +4,20 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use App\Services\QueueService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class CustomerController extends Controller
 {
+    protected QueueService $queueService;
+
+    public function __construct(QueueService $queueService)
+    {
+        $this->queueService = $queueService;
+    }
+
     /**
      * Display a listing of customers
      */
@@ -178,6 +186,53 @@ class CustomerController extends Controller
         $stats = [
             'total' => Customer::count(),
             'active' => Customer::active()->count(),
+
+
+    /**
+     * Manually sync queue for a customer
+     */
+    public function syncQueue(string $id): JsonResponse
+    {
+        try {
+            $customer = Customer::with(['servicePlan', 'router'])->findOrFail($id);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Customer not found',
+            ], 404);
+        }
+
+        $result = $this->queueService->syncCustomerQueue($customer);
+
+        return response()->json($result);
+    }
+
+    /**
+     * Bulk sync queues for multiple customers
+     */
+    public function bulkSyncQueues(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'customer_ids' => 'required|array',
+            'customer_ids.*' => 'required|string|exists:customers,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $result = $this->queueService->bulkSyncQueues($request->input('customer_ids'));
+
+        return response()->json([
+            'success' => true,
+            'data' => $result,
+        ]);
+    }
+
             'suspended' => Customer::suspended()->count(),
             'expired' => Customer::expired()->count(),
             'pending' => Customer::where('status', 'pending')->count(),

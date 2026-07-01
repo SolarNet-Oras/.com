@@ -61,6 +61,8 @@ Route::prefix('v1')->group(function () {
         // Customer routes
         Route::apiResource('customers', CustomerController::class);
         Route::get('customers-statistics', [CustomerController::class, 'statistics']);
+        Route::post('customers/{id}/sync-queue', [CustomerController::class, 'syncQueue']);
+        Route::post('customers/bulk-sync-queues', [CustomerController::class, 'bulkSyncQueues']);
         
         // Router routes (MikroTik)
         Route::apiResource('routers', RouterController::class);

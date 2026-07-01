@@ -83,18 +83,18 @@ class AuthController extends Controller
 
         $credentials = $request->only('email', 'password');
 
-        if (!$token = auth()->attempt($credentials)) {
+        if (!$token = auth('api')->attempt($credentials)) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Invalid credentials',
             ], 401);
         }
 
-        $user = auth()->user();
+        $user = auth('api')->user();
 
         // Check if user is active
         if (!$user->is_active) {
-            auth()->logout();
+            auth('api')->logout();
             return response()->json([
                 'status' => 'error',
                 'message' => 'Your account has been deactivated. Please contact support.',
@@ -112,7 +112,7 @@ class AuthController extends Controller
      */
     public function me(): JsonResponse
     {
-        $user = auth()->user();
+        $user = auth('api')->user();
         
         return response()->json([
             'status' => 'success',
@@ -143,7 +143,7 @@ class AuthController extends Controller
      */
     public function logout(): JsonResponse
     {
-        auth()->logout();
+        auth('api')->logout();
 
         return response()->json([
             'status' => 'success',
@@ -156,7 +156,7 @@ class AuthController extends Controller
      */
     public function refresh(): JsonResponse
     {
-        return $this->respondWithToken(auth()->refresh());
+        return $this->respondWithToken(auth('api')->refresh());
     }
 
     /**
@@ -164,7 +164,7 @@ class AuthController extends Controller
      */
     protected function respondWithToken(string $token): JsonResponse
     {
-        $user = auth()->user();
+        $user = auth('api')->user();
 
         return response()->json([
             'status' => 'success',

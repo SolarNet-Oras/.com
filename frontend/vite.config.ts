@@ -12,6 +12,18 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    host: '0.0.0.0',
+    strictPort: true,
+    allowedHosts: [
+      'network-ops-center-2.preview.emergentagent.com',
+      'network-ops-center-2.cluster-6.preview.emergentcf.cloud',
+      '.preview.emergentagent.com',
+      '.emergentcf.cloud'
+    ],
+    hmr: {
+      clientPort: 443,
+      protocol: 'wss',
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:8001',

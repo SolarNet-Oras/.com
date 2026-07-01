@@ -66,6 +66,8 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('routers', RouterController::class);
         Route::post('routers/{id}/test-connection', [RouterController::class, 'testConnection']);
         Route::post('routers/{id}/sync', [RouterController::class, 'sync']);
+        Route::get('routers/{id}/setup-script', [RouterController::class, 'generateSetupScript']);
+        Route::get('routers/scripts/queue-management', [RouterController::class, 'getQueueScript']);
         
         // Service Plans routes
         Route::apiResource('service-plans', ServicePlanController::class);

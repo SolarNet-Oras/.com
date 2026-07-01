@@ -79,4 +79,10 @@ export const routerService = {
     const response = await api.post<{ success: boolean; message: string }>(`/routers/${id}/sync`);
     return response.data;
   },
+
+  async generateSetupScript(id: string, billingSystemIp?: string): Promise<{ script: string }> {
+    const params = billingSystemIp ? { billing_system_ip: billingSystemIp } : {};
+    const response = await api.get<{ success: boolean; data: { script: string } }>(`/routers/${id}/setup-script`, { params });
+    return response.data.data;
+  },
 };

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { type Router, routerService } from '@/services/routerService';
-import { Wifi, WifiOff, Circle, TestTube, RefreshCw, Edit, Trash2 } from 'lucide-react';
+import { Wifi, WifiOff, Circle, TestTube, RefreshCw, Edit, Trash2, FileCode } from 'lucide-react';
+import { SetupScriptModal } from './SetupScriptModal';
 
 interface RouterListProps {
   routers: Router[];
@@ -14,6 +15,8 @@ export function RouterList({ routers, onEdit, onDelete, onTestConnection, onSync
   const [testingId, setTestingId] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<{ id: string; success: boolean; message: string } | null>(null);
   const [syncingId, setSyncingId] = useState<string | null>(null);
+  const [scriptModalOpen, setScriptModalOpen] = useState(false);
+  const [selectedRouter, setSelectedRouter] = useState<Router | null>(null);
 
   const handleTest = async (id: string) => {
     setTestingId(id);
@@ -45,6 +48,11 @@ export function RouterList({ routers, onEdit, onDelete, onTestConnection, onSync
     } finally {
       setSyncingId(null);
     }
+  };
+
+  const handleGenerateScript = (router: Router) => {
+    setSelectedRouter(router);
+    setScriptModalOpen(true);
   };
 
   const getStatusIcon = (status: Router['connection_status']) => {
@@ -136,6 +144,14 @@ export function RouterList({ routers, onEdit, onDelete, onTestConnection, onSync
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex items-center justify-end space-x-2">
                     <button
+                      onClick={() => handleGenerateScript(router)}
+                      className="p-2 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-colors"
+                      title="Generate Setup Script"
+                      aria-label="Generate Setup Script"
+                    >
+                      <FileCode className="h-4 w-4" />
+                    </button>
+                    <button
                       onClick={() => handleTest(router.id)}
                       disabled={testingId === router.id}
                       data-testid="router-test-btn"
@@ -202,6 +218,16 @@ export function RouterList({ routers, onEdit, onDelete, onTestConnection, onSync
             {testResult.message}
           </p>
         </div>
+      )}
+      
+      {/* Setup Script Modal */}
+      {selectedRouter && (
+        <SetupScriptModal
+          isOpen={scriptModalOpen}
+          onClose={() => setScriptModalOpen(false)}
+          routerId={selectedRouter.id}
+          routerName={selectedRouter.name}
+        />
       )}
     </div>
   );

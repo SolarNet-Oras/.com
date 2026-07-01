@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Router;
 use App\Services\MikrotikService;
+use App\Services\MikrotikScriptGenerator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -13,10 +14,12 @@ use Illuminate\Validation\Rule;
 class RouterController extends Controller
 {
     protected MikrotikService $mikrotikService;
+    protected MikrotikScriptGenerator $scriptGenerator;
 
-    public function __construct(MikrotikService $mikrotikService)
+    public function __construct(MikrotikService $mikrotikService, MikrotikScriptGenerator $scriptGenerator)
     {
         $this->mikrotikService = $mikrotikService;
+        $this->scriptGenerator = $scriptGenerator;
     }
 
     /**
@@ -188,4 +191,51 @@ class RouterController extends Controller
 
         return response()->json($result);
     }
+
+
+    /**
+     * Generate setup script for router
+     */
+    public function generateSetupScript(Request $request, string $id): JsonResponse
+    {
+        try {
+            $router = Router::findOrFail($id);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Router not found',
+            ], 404);
+        }
+
+        $billingSystemIp = $request->input('billing_system_ip');
+        $script = $this->scriptGenerator->generateSetupScript($router, $billingSystemIp);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'script' => $script,
+                'router' => [
+                    'name' => $router->name,
+                    'host' => $router->host,
+                    'port' => $router->port,
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * Get queue management script template
+     */
+    public function getQueueScript(): JsonResponse
+    {
+        $script = $this->scriptGenerator->generateQueueManagementScript();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'script' => $script,
+            ],
+        ]);
+    }
+
 }

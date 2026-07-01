@@ -1,5 +1,5 @@
 import api from './api';
-import { Payment, PaymentStatistics, PaginatedResponse } from '../types/api';
+import type { Payment, PaymentStatistics, PaginatedResponse } from '../types/api';
 
 export const paymentService = {
   /**

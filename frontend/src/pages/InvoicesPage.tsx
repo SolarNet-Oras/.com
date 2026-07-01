@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import invoiceService from '../services/invoiceService';
-import { Invoice, Customer } from '../types/api';
+import type { Invoice, Customer } from '../types/api';
 import { customerService } from '../services/customerService';
 
 const InvoicesPage: React.FC = () => {

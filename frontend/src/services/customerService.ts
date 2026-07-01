@@ -1,5 +1,5 @@
 import api from './api';
-import { Customer, PaginatedResponse } from '../types/api';
+import type { Customer, PaginatedResponse } from '../types/api';
 
 export const customerService = {
   /**

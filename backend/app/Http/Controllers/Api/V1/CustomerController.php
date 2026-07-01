@@ -186,7 +186,13 @@ class CustomerController extends Controller
         $stats = [
             'total' => Customer::count(),
             'active' => Customer::active()->count(),
+            'suspended' => Customer::where('status', 'suspended')->count(),
+            'expired' => Customer::where('status', 'expired')->count(),
+            'pending' => Customer::where('status', 'pending')->count(),
+        ];
 
+        return response()->json($stats);
+    }
 
     /**
      * Manually sync queue for a customer

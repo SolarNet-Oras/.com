@@ -1,0 +1,19 @@
+{
+  "summary": "Verified public preview URL fix (port 3001 -> 3000). Public URL loads HTTP 200 with full Tailwind styling, login works end-to-end, dashboard renders correctly for admin user. Both bug fixes (PostCSS/Tailwind + port routing) confirmed working.",
+  "tested_scope": ["frontend", "integration"],
+  "passed": [
+    "Public URL https://network-ops-center-2.preview.emergentagent.com/ returns HTTP 200 (no 502)",
+    "React app loads and redirects unauthenticated users to /login",
+    "Tailwind CSS fully applied (styled Sign In button: bg=rgb(37,99,235), padding=8px 16px, borderRadius=6px)",
+    "Login page renders with styled form (email, password, Sign In button, demo credentials card)",
+    "Admin login (admin@ispbilling.local / password) succeeds and redirects to /dashboard",
+    "Dashboard renders with sidebar navigation, welcome message, metric cards - all styled correctly",
+    "No console errors during full flow",
+    "No error alerts on any page"
+  ],
+  "failed": [],
+  "action_items": [],
+  "success_rate": {"backend": "not tested (skipped per request)", "frontend": "100%"},
+  "retest_needed": false,
+  "full_testing_deferred": true
+}

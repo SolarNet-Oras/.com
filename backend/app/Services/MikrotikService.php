@@ -138,9 +138,6 @@ class MikrotikService
             ];
         }
     }
-}
-
-
 
     /**
      * Add a simple queue for a customer
@@ -379,7 +376,9 @@ class MikrotikService
                 'success' => false,
                 'message' => $e->getMessage(),
                 'data' => [],
-
+            ];
+        }
+    }
 
     /**
      * Get DHCP leases from router (already implemented above, but ensuring it's here)

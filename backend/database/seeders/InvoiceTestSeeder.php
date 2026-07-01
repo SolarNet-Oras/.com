@@ -85,42 +85,45 @@ class InvoiceTestSeeder extends Seeder
         $customers = [
             [
                 'account_number' => 'CUST-001',
-                'first_name' => 'John',
-                'last_name' => 'Doe',
+                'full_name' => 'John Doe',
                 'email' => 'john.doe@example.com',
-                'phone' => '+1234567001',
+                'contact_number' => '+1234567001',
                 'address' => '123 Main Street',
                 'status' => 'active',
                 'router_id' => $router->id,
                 'service_plan_id' => $basicPlan->id,
                 'ip_address' => '10.0.0.10',
                 'mac_address' => '00:11:22:33:44:01',
+                'monthly_fee' => $basicPlan->price,
+                'installation_date' => now()->subMonths(3),
             ],
             [
                 'account_number' => 'CUST-002',
-                'first_name' => 'Jane',
-                'last_name' => 'Smith',
+                'full_name' => 'Jane Smith',
                 'email' => 'jane.smith@example.com',
-                'phone' => '+1234567002',
+                'contact_number' => '+1234567002',
                 'address' => '456 Oak Avenue',
                 'status' => 'active',
                 'router_id' => $router->id,
                 'service_plan_id' => $standardPlan->id,
                 'ip_address' => '10.0.0.11',
                 'mac_address' => '00:11:22:33:44:02',
+                'monthly_fee' => $standardPlan->price,
+                'installation_date' => now()->subMonths(2),
             ],
             [
                 'account_number' => 'CUST-003',
-                'first_name' => 'Bob',
-                'last_name' => 'Johnson',
+                'full_name' => 'Bob Johnson',
                 'email' => 'bob.johnson@example.com',
-                'phone' => '+1234567003',
+                'contact_number' => '+1234567003',
                 'address' => '789 Pine Road',
                 'status' => 'active',
                 'router_id' => $router->id,
                 'service_plan_id' => $premiumPlan->id,
                 'ip_address' => '10.0.0.12',
                 'mac_address' => '00:11:22:33:44:03',
+                'monthly_fee' => $premiumPlan->price,
+                'installation_date' => now()->subMonths(1),
             ],
         ];
 
@@ -131,7 +134,7 @@ class InvoiceTestSeeder extends Seeder
                 $customerData
             );
             $createdCustomers[] = $customer;
-            $this->command->info('✅ Customer created: ' . $customer->first_name . ' ' . $customer->last_name . ' (' . $customer->account_number . ')');
+            $this->command->info('✅ Customer created: ' . $customer->full_name . ' (' . $customer->account_number . ')');
         }
 
         // Generate invoices for customers
@@ -186,7 +189,7 @@ class InvoiceTestSeeder extends Seeder
             'reference' => 'Partial payment',
             'notes' => 'First installment',
         ]);
-        $this->command->info('✅ Invoice generated (Partial): ' . $invoice3->invoice_number . ' for ' . $createdCustomers[2]->first_name . ' ($' . $invoice3->fresh()->balance . ' remaining)');
+        $this->command->info('✅ Invoice generated (Partial): ' . $invoice3->invoice_number . ' for ' . $createdCustomers[2]->full_name . ' ($' . $invoice3->fresh()->balance . ' remaining)');
 
         $this->command->info('');
         $this->command->info('📊 Summary:');

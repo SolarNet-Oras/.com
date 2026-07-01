@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\RoleController;
+use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -23,11 +26,29 @@ Route::prefix('v1')->group(function () {
         ]);
     });
 
-    // Protected routes
-    Route::middleware('auth:sanctum')->group(function () {
-        Route::get('/user', function (Request $request) {
-            return $request->user();
+    // Authentication routes (public)
+    Route::prefix('auth')->group(function () {
+        Route::post('/register', [AuthController::class, 'register']);
+        Route::post('/login', [AuthController::class, 'login']);
+        
+        // Protected auth routes
+        Route::middleware('auth:api')->group(function () {
+            Route::post('/logout', [AuthController::class, 'logout']);
+            Route::post('/refresh', [AuthController::class, 'refresh']);
+            Route::get('/me', [AuthController::class, 'me']);
         });
     });
-});
 
+    // Protected routes (require authentication)
+    Route::middleware('auth:api')->group(function () {
+        // User routes
+        Route::apiResource('users', UserController::class);
+        
+        // Role routes
+        Route::apiResource('roles', RoleController::class);
+        
+        // Additional role routes
+        Route::post('roles/{role}/permissions', [RoleController::class, 'syncPermissions']);
+        Route::post('users/{user}/roles', [UserController::class, 'assignRoles']);
+    });
+});

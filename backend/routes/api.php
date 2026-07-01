@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\CustomerController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\RoleController;
 use App\Http\Controllers\Api\V1\RouterController;
+use App\Http\Controllers\Api\V1\ServicePlanController;
 use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -65,5 +66,8 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('routers', RouterController::class);
         Route::post('routers/{id}/test-connection', [RouterController::class, 'testConnection']);
         Route::post('routers/{id}/sync', [RouterController::class, 'sync']);
+        
+        // Service Plans routes
+        Route::apiResource('service-plans', ServicePlanController::class);
     });
 });

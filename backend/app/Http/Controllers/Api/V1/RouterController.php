@@ -156,9 +156,9 @@ class RouterController extends Controller
      */
     public function testConnection(string $id): JsonResponse
     {
-        $router = Router::find($id);
-
-        if (!$router) {
+        try {
+            $router = Router::findOrFail($id);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Router not found',
@@ -175,9 +175,9 @@ class RouterController extends Controller
      */
     public function sync(string $id): JsonResponse
     {
-        $router = Router::find($id);
-
-        if (!$router) {
+        try {
+            $router = Router::findOrFail($id);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Router not found',

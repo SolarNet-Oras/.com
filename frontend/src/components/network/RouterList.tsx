@@ -24,7 +24,11 @@ export function RouterList({ routers, onEdit, onDelete, onTestConnection, onSync
       setTestResult({ id, success: result.success, message: result.message });
       onTestConnection(id);
     } catch (error: any) {
-      setTestResult({ id, success: false, message: error.message || 'Test failed' });
+      setTestResult({ 
+        id, 
+        success: false, 
+        message: error.response?.data?.message || error.message || 'Test failed' 
+      });
     } finally {
       setTestingId(null);
       setTimeout(() => setTestResult(null), 5000);
@@ -134,8 +138,10 @@ export function RouterList({ routers, onEdit, onDelete, onTestConnection, onSync
                     <button
                       onClick={() => handleTest(router.id)}
                       disabled={testingId === router.id}
+                      data-testid="router-test-btn"
                       className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors disabled:opacity-50"
                       title="Test Connection"
+                      aria-label="Test Connection"
                     >
                       {testingId === router.id ? (
                         <div className="animate-spin h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full" />
@@ -146,8 +152,10 @@ export function RouterList({ routers, onEdit, onDelete, onTestConnection, onSync
                     <button
                       onClick={() => handleSync(router.id)}
                       disabled={syncingId === router.id}
+                      data-testid="router-sync-btn"
                       className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors disabled:opacity-50"
                       title="Sync Now"
+                      aria-label="Sync Now"
                     >
                       {syncingId === router.id ? (
                         <div className="animate-spin h-4 w-4 border-2 border-green-600 border-t-transparent rounded-full" />
@@ -157,15 +165,19 @@ export function RouterList({ routers, onEdit, onDelete, onTestConnection, onSync
                     </button>
                     <button
                       onClick={() => onEdit(router)}
+                      data-testid="router-edit-btn"
                       className="p-2 text-foreground hover:bg-secondary rounded transition-colors"
                       title="Edit Router"
+                      aria-label="Edit Router"
                     >
                       <Edit className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => onDelete(router.id)}
+                      data-testid="router-delete-btn"
                       className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
                       title="Delete Router"
+                      aria-label="Delete Router"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>

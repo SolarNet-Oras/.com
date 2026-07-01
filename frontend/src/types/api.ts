@@ -126,6 +126,13 @@ export interface Customer {
   status: 'active' | 'suspended' | 'expired' | 'pending';
   router_id: string | null;
   service_plan_id: string | null;
+  service_plan?: {
+    id: string;
+    name: string;
+    download_speed: number;
+    upload_speed: number;
+    price: number;
+  };
   monthly_fee: number;
   mac_address: string | null;
   ip_address: string | null;

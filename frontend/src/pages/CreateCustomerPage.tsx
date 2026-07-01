@@ -28,6 +28,7 @@ const CreateCustomerPage: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const [servicePlans, setServicePlans] = useState<ServicePlan[]>([]);
   
   const [formData, setFormData] = useState<CustomerFormData>({
     account_number: `ACC${Date.now().toString().slice(-8)}`,
@@ -38,6 +39,19 @@ const CreateCustomerPage: React.FC = () => {
     monthly_fee: '0',
     status: 'pending',
   });
+
+  useEffect(() => {
+    loadServicePlans();
+  }, []);
+
+  const loadServicePlans = async () => {
+    try {
+      const plans = await servicePlanService.getAll();
+      setServicePlans(plans.filter(p => p.is_active));
+    } catch (err) {
+      console.error('Failed to load service plans:', err);
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>): void => {
     const { name, value } = e.target;
@@ -186,6 +200,28 @@ const CreateCustomerPage: React.FC = () => {
                   step="0.01"
                   className="w-full px-4 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Service Plan
+                </label>
+                <select
+                  name="service_plan_id"
+                  value={formData.service_plan_id || ''}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="">No Plan Assigned</option>
+                  {servicePlans.map((plan) => (
+                    <option key={plan.id} value={plan.id}>
+                      {plan.name} - {plan.download_speed}/{plan.upload_speed} Mbps - ${plan.price}/mo
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Select a bandwidth plan for this customer
+                </p>
               </div>
 
               <div>

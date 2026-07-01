@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\CustomerController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\RoleController;
 use App\Http\Controllers\Api\V1\UserController;
@@ -54,5 +55,9 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('roles', RoleController::class);
         Route::post('roles/{role}/permissions', [RoleController::class, 'syncPermissions']);
         Route::get('permissions', [RoleController::class, 'permissions']);
+        
+        // Customer routes
+        Route::apiResource('customers', CustomerController::class);
+        Route::get('customers-statistics', [CustomerController::class, 'statistics']);
     });
 });

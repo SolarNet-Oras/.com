@@ -6,6 +6,7 @@ import { ThemeProvider } from '@/context/ThemeContext';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import LoginPage from '@/pages/LoginPage';
 import NewDashboardPage from '@/pages/NewDashboardPage';
+import CustomersPage from '@/pages/CustomersPage';
 
 // ============================================================================
 // Main App Component
@@ -27,6 +28,14 @@ const App: React.FC = (): JSX.Element => {
                 element={
                   <ProtectedRoute>
                     <NewDashboardPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/customers"
+                element={
+                  <ProtectedRoute>
+                    <CustomersPage />
                   </ProtectedRoute>
                 }
               />

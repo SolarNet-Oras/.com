@@ -232,6 +232,56 @@ class RouterController extends Controller
 
         return response()->json([
             'success' => true,
+
+
+    /**
+     * Sync DHCP leases for a router
+     */
+    public function syncDhcpLeases(Request $request, string $id): JsonResponse
+    {
+        try {
+            $router = Router::findOrFail($id);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Router not found',
+            ], 404);
+        }
+
+        $dhcpSyncService = app(\App\Services\DhcpSyncService::class);
+        $autoCreate = $request->input('auto_create_customers', true);
+        
+        $result = $dhcpSyncService->syncRouterLeases($router, $autoCreate);
+
+        return response()->json([
+            'success' => empty($result['errors']),
+            'data' => $result,
+        ]);
+    }
+
+    /**
+     * Get unmatched DHCP leases
+     */
+    public function getUnmatchedLeases(Request $request, string $id): JsonResponse
+    {
+        try {
+            $router = Router::findOrFail($id);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Router not found',
+            ], 404);
+        }
+
+        $dhcpSyncService = app(\App\Services\DhcpSyncService::class);
+        $leases = $dhcpSyncService->getUnmatchedLeases($router);
+
+        return response()->json([
+            'success' => true,
+            'data' => $leases,
+        ]);
+    }
+
             'data' => [
                 'script' => $script,
             ],

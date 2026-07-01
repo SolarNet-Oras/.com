@@ -85,4 +85,16 @@ export const routerService = {
     const response = await api.get<{ success: boolean; data: { script: string } }>(`/routers/${id}/setup-script`, { params });
     return response.data.data;
   },
+
+  async syncDhcp(id: string, autoCreateCustomers: boolean = true): Promise<any> {
+    const response = await api.post<{ success: boolean; data: any }>(`/routers/${id}/sync-dhcp`, { 
+      auto_create_customers: autoCreateCustomers 
+    });
+    return response.data.data;
+  },
+
+  async getUnmatchedLeases(id: string): Promise<any[]> {
+    const response = await api.get<{ success: boolean; data: any[] }>(`/routers/${id}/unmatched-leases`);
+    return response.data.data;
+  },
 };

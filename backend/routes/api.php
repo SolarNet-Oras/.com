@@ -70,6 +70,8 @@ Route::prefix('v1')->group(function () {
         Route::post('routers/{id}/sync', [RouterController::class, 'sync']);
         Route::get('routers/{id}/setup-script', [RouterController::class, 'generateSetupScript']);
         Route::get('routers/scripts/queue-management', [RouterController::class, 'getQueueScript']);
+        Route::post('routers/{id}/sync-dhcp', [RouterController::class, 'syncDhcpLeases']);
+        Route::get('routers/{id}/unmatched-leases', [RouterController::class, 'getUnmatchedLeases']);
         
         // Service Plans routes
         Route::apiResource('service-plans', ServicePlanController::class);

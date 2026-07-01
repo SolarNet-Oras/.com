@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { type Router, routerService } from '@/services/routerService';
-import { Wifi, WifiOff, Circle, TestTube, RefreshCw, Edit, Trash2, FileCode } from 'lucide-react';
+import { Wifi, WifiOff, Circle, TestTube, RefreshCw, Edit, Trash2, FileCode, Users } from 'lucide-react';
 import { SetupScriptModal } from './SetupScriptModal';
 
 interface RouterListProps {
@@ -15,6 +15,7 @@ export function RouterList({ routers, onEdit, onDelete, onTestConnection, onSync
   const [testingId, setTestingId] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<{ id: string; success: boolean; message: string } | null>(null);
   const [syncingId, setSyncingId] = useState<string | null>(null);
+  const [dhcpSyncingId, setDhcpSyncingId] = useState<string | null>(null);
   const [scriptModalOpen, setScriptModalOpen] = useState(false);
   const [selectedRouter, setSelectedRouter] = useState<Router | null>(null);
 
@@ -53,6 +54,20 @@ export function RouterList({ routers, onEdit, onDelete, onTestConnection, onSync
   const handleGenerateScript = (router: Router) => {
     setSelectedRouter(router);
     setScriptModalOpen(true);
+  };
+
+  const handleDhcpSync = async (id: string) => {
+    setDhcpSyncingId(id);
+    try {
+      const result = await routerService.syncDhcp(id, true);
+      alert(`DHCP Sync Complete!\nFetched: ${result.leases_fetched}\nCustomers Created: ${result.customers_created}\nMatched: ${result.customers_matched}\nIPs Updated: ${result.ips_updated}`);
+      onSync(id);
+    } catch (error) {
+      console.error('DHCP sync failed:', error);
+      alert('DHCP sync failed');
+    } finally {
+      setDhcpSyncingId(null);
+    }
   };
 
   const getStatusIcon = (status: Router['connection_status']) => {
@@ -150,6 +165,19 @@ export function RouterList({ routers, onEdit, onDelete, onTestConnection, onSync
                       aria-label="Generate Setup Script"
                     >
                       <FileCode className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDhcpSync(router.id)}
+                      disabled={dhcpSyncingId === router.id}
+                      className="p-2 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded transition-colors disabled:opacity-50"
+                      title="Sync DHCP Leases"
+                      aria-label="Sync DHCP"
+                    >
+                      {dhcpSyncingId === router.id ? (
+                        <div className="animate-spin h-4 w-4 border-2 border-orange-600 border-t-transparent rounded-full" />
+                      ) : (
+                        <Users className="h-4 w-4" />
+                      )}
                     </button>
                     <button
                       onClick={() => handleTest(router.id)}

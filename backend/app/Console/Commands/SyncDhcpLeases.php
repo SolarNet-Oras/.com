@@ -1,0 +1,67 @@
+<?php
+
+namespace App\Console\Commands;
+
+use App\Services\DhcpSyncService;
+use Illuminate\Console\Command;
+
+class SyncDhcpLeases extends Command
+{
+    protected $signature = 'dhcp:sync
+                            {--router= : Specific router ID to sync}
+                            {--no-auto-create : Disable auto-creating customers from unknown MACs}';
+
+    protected $description = 'Sync DHCP leases from MikroTik routers';
+
+    public function handle(DhcpSyncService $dhcpSyncService): int
+    {
+        $this->info('Starting DHCP lease synchronization...');
+
+        $autoCreate = !$this->option('no-auto-create');
+        $routerId = $this->option('router');
+
+        if ($routerId) {
+            $router = \App\Models\Router::find($routerId);
+            if (!$router) {
+                $this->error("Router not found: {$routerId}");
+                return 1;
+            }
+
+            $this->info("Syncing DHCP leases from: {$router->name}");
+            $result = $dhcpSyncService->syncRouterLeases($router, $autoCreate);
+            
+            $this->displayResult($result);
+        } else {
+            $this->info('Syncing DHCP leases from all online routers...');
+            $results = $dhcpSyncService->syncAllRouters($autoCreate);
+            
+            $this->info("Total routers: {$results['total_routers']}");
+            $this->info("Success: {$results['success']}, Failed: {$results['failed']}");
+            
+            foreach ($results['routers'] as $result) {
+                $this->newLine();
+                $this->displayResult($result);
+            }
+        }
+
+        $this->newLine();
+        $this->info('DHCP sync completed!');
+        
+        return 0;
+    }
+
+    protected function displayResult(array $result): void
+    {
+        $this->line("Router: {$result['router']}");
+        $this->line("  Leases fetched: {$result['leases_fetched']}");
+        $this->line("  Leases stored: {$result['leases_stored']}");
+        $this->line("  Customers matched: {$result['customers_matched']}");
+        $this->line("  Customers created: {$result['customers_created']}");
+        $this->line("  IPs updated: {$result['ips_updated']}");
+        $this->line("  Queues synced: {$result['queues_synced']}");
+        
+        if (!empty($result['errors'])) {
+            $this->error("  Errors: " . implode(', ', $result['errors']));
+        }
+    }
+}

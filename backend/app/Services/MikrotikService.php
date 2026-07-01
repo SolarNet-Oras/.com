@@ -379,6 +379,61 @@ class MikrotikService
                 'success' => false,
                 'message' => $e->getMessage(),
                 'data' => [],
+
+
+    /**
+     * Get DHCP leases from router (already implemented above, but ensuring it's here)
+     * Returns leases in standardized format
+     */
+    public function getDhcpLeasesDetailed(Router $router): array
+    {
+        try {
+            $config = (new Config())
+                ->set('host', $router->host)
+                ->set('user', $router->username)
+                ->set('pass', $router->password)
+                ->set('port', $router->port);
+
+            $client = new Client($config);
+            
+            $query = new Query('/ip/dhcp-server/lease/print');
+            $leases = $client->query($query)->read();
+            
+            // Parse and format leases
+            $formattedLeases = [];
+            foreach ($leases as $lease) {
+                $formattedLeases[] = [
+                    'mac_address' => $lease['mac-address'] ?? $lease['active-mac-address'] ?? null,
+                    'ip_address' => $lease['address'] ?? $lease['active-address'] ?? null,
+                    'hostname' => $lease['host-name'] ?? null,
+                    'status' => $lease['status'] ?? 'unknown',
+                    'server' => $lease['server'] ?? 'default',
+                    'expires_after' => $lease['expires-after'] ?? null,
+                    'last_seen' => $lease['last-seen'] ?? null,
+                ];
+            }
+            
+            return [
+                'success' => true,
+                'data' => $formattedLeases,
+                'count' => count($formattedLeases),
+            ];
+            
+        } catch (Exception $e) {
+            Log::error('Failed to fetch DHCP leases', [
+                'router' => $router->name,
+                'error' => $e->getMessage(),
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => $e->getMessage(),
+                'data' => [],
+                'count' => 0,
+            ];
+        }
+    }
+
             ];
         }
     }

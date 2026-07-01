@@ -1,0 +1,35 @@
+{
+  "summary": "Verified PostCSS/Tailwind bug fix on localhost:3001 (Vite dev server). Login page renders with fully applied Tailwind styles (blue Sign In button rgb(37,99,235), styled inputs, demo credentials box, proper card layout). /src/index.css compiles to 27KB of Tailwind CSS returning HTTP 200. No PostCSS or 'module is not defined' errors in supervisor logs since postcss.config.cjs rename. Console has no PostCSS/Tailwind errors.",
+  "tested_scope": ["frontend"],
+  "passed": [
+    "Frontend loads at localhost:3001 (HTTP 200)",
+    "PostCSS config loads successfully (postcss.config.cjs) - no 'module is not defined' error",
+    "Tailwind CSS compiles - /src/index.css returns 200 with --tw-* variables",
+    "Login form renders with proper Tailwind styling (blue button bg-primary, rounded inputs, card layout)",
+    "'ISP Billing System' title, email/password inputs (with placeholders), Sign In button, Demo Credentials box all visible",
+    "No PostCSS/Tailwind related JS errors in browser console",
+    "axios AxiosInstance type-import fix verified indirectly (app runs, no build/runtime errors)"
+  ],
+  "failed": [
+    {
+      "area": "public URL routing",
+      "issue": "Public URL https://network-ops-center-2.preview.emergentagent.com/ returns 502 Bad Gateway (nginx not proxying to Vite on port 3001). Frontend only accessible via localhost:3001.",
+      "evidence": "curl -I -> HTTP 502 on public URL; localhost:3001 returns 200",
+      "priority": "MEDIUM"
+    },
+    {
+      "area": "vite HMR websocket",
+      "issue": "Vite HMR websocket tries wss://localhost/?token=... and fails (dev-only cosmetic; does not affect page rendering)",
+      "evidence": "Console: 'WebSocket connection to wss://localhost/?token=... failed: ERR_CONNECTION_REFUSED'",
+      "priority": "LOW"
+    }
+  ],
+  "action_items": [
+    "PostCSS/Tailwind bug fix is VERIFIED WORKING on localhost:3001. Main agent may proceed.",
+    "Optional: configure nginx / preview proxy to route public URL to port 3001 so external testing works.",
+    "Optional: set vite server.hmr.clientPort / host so HMR websocket works over the preview proxy."
+  ],
+  "success_rate": {"backend": "n/a (skipped per request)", "frontend": "100% for bug-fix verification"},
+  "retest_needed": false,
+  "full_testing_deferred": true
+}

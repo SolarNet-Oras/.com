@@ -10,7 +10,8 @@
  * - Error handling
  */
 
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import axios, { type AxiosRequestConfig, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
+import type { AxiosInstance } from 'axios';
 import { tokenStorage } from '@/lib/tokenStorage';
 import { HTTP_STATUS } from '@/lib/constants';
 import type { ApiResponse, ApiError } from '@/types/api';

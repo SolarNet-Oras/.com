@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\RoleController;
 use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Http\Request;
@@ -41,6 +42,10 @@ Route::prefix('v1')->group(function () {
 
     // Protected routes (require authentication)
     Route::middleware('auth:api')->group(function () {
+        // Dashboard routes
+        Route::get('dashboard/metrics', [DashboardController::class, 'metrics']);
+        Route::get('dashboard/quick-stats', [DashboardController::class, 'quickStats']);
+        
         // User routes
         Route::apiResource('users', UserController::class);
         Route::post('users/{user}/roles', [UserController::class, 'assignRoles']);

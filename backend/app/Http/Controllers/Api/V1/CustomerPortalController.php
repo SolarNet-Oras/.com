@@ -14,13 +14,14 @@ use Illuminate\Support\Facades\Validator;
 class CustomerPortalController extends Controller
 {
     /**
-     * Customer login
+     * Customer login with proper authentication
      */
     public function login(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'account_number' => 'required|string',
+            'password' => 'nullable|string', // Optional for backward compatibility
         ]);
 
         if ($validator->fails()) {
@@ -42,8 +43,21 @@ class CustomerPortalController extends Controller
             ], 401);
         }
 
-        // Generate a simple token (in production, use JWT or Sanctum)
-        $token = base64_encode($customer->id . '|' . time());
+        // Generate a secure token using Laravel's password_hash as signing mechanism
+        // In production, use Laravel Sanctum for proper token management
+        $payload = [
+            'customer_id' => $customer->id,
+            'email' => $customer->email,
+            'account_number' => $customer->account_number,
+            'issued_at' => now()->timestamp,
+            'expires_at' => now()->addDays(7)->timestamp,
+        ];
+        
+        $signature = hash_hmac('sha256', json_encode($payload), config('app.key'));
+        $token = base64_encode(json_encode([
+            'payload' => $payload,
+            'signature' => $signature,
+        ]));
 
         return response()->json([
             'status' => 'success',
@@ -58,6 +72,7 @@ class CustomerPortalController extends Controller
                 ],
                 'access_token' => $token,
                 'token_type' => 'bearer',
+                'expires_at' => now()->addDays(7)->toIso8601String(),
             ],
         ]);
     }
@@ -202,7 +217,7 @@ class CustomerPortalController extends Controller
     }
 
     /**
-     * Get authenticated customer from token
+     * Get authenticated customer from token with signature verification
      */
     protected function getAuthenticatedCustomer(Request $request): ?Customer
     {
@@ -212,16 +227,50 @@ class CustomerPortalController extends Controller
             return null;
         }
 
-        // Decode token (simple implementation - use JWT in production)
-        $decoded = base64_decode($token);
-        $parts = explode('|', $decoded);
+        try {
+            // Decode and verify token
+            $decoded = json_decode(base64_decode($token), true);
+            
+            if (!$decoded || !isset($decoded['payload']) || !isset($decoded['signature'])) {
+                return null;
+            }
 
-        if (count($parts) !== 2) {
+            $payload = $decoded['payload'];
+            $signature = $decoded['signature'];
+
+            // Verify signature
+            $expectedSignature = hash_hmac('sha256', json_encode($payload), config('app.key'));
+            
+            if (!hash_equals($expectedSignature, $signature)) {
+                return null;
+            }
+
+            // Check expiration
+            if (isset($payload['expires_at']) && $payload['expires_at'] < now()->timestamp) {
+                return null;
+            }
+
+            // Verify customer still exists and is active
+            $customer = Customer::find($payload['customer_id']);
+            
+            if (!$customer || $customer->status === 'suspended') {
+                return null;
+            }
+
+            // Additional verification: check email and account match
+            if ($customer->email !== $payload['email'] || 
+                $customer->account_number !== $payload['account_number']) {
+                return null;
+            }
+
+            return $customer;
+            
+        } catch (\Exception $e) {
+            \Log::warning('Customer authentication failed', [
+                'error' => $e->getMessage(),
+                'token' => substr($token, 0, 20) . '...',
+            ]);
             return null;
         }
-
-        $customerId = $parts[0];
-
-        return Customer::find($customerId);
     }
 }

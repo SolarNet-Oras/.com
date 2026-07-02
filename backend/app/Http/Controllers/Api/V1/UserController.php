@@ -193,8 +193,27 @@ class UserController extends Controller
     /**
      * Assign roles to a user
      */
+    /**
+     * Assign roles to user (admin only, prevent self-escalation)
+     */
     public function assignRoles(Request $request, string $id): JsonResponse
     {
+        // Prevent users from modifying their own roles
+        if ($request->user()->id === $id) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'You cannot modify your own roles. Contact another administrator.',
+            ], 403);
+        }
+
+        // Verify the authenticated user has permission to assign roles
+        if (!$request->user()->hasRole(['admin', 'super_admin'])) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthorized. Only administrators can assign roles.',
+            ], 403);
+        }
+
         $validator = Validator::make($request->all(), [
             'roles' => 'required|array',
             'roles.*' => 'exists:roles,name',
@@ -209,6 +228,16 @@ class UserController extends Controller
         }
 
         $user = User::findOrFail($id);
+        
+        // Prevent assigning super_admin role unless requester is super_admin
+        $requestedRoles = $request->roles;
+        if (in_array('super_admin', $requestedRoles) && !$request->user()->hasRole('super_admin')) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Only super administrators can assign the super_admin role.',
+            ], 403);
+        }
+        
         $user->syncRoles($request->roles);
 
         return response()->json([

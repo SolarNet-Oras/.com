@@ -55,52 +55,82 @@ Route::prefix('v1')->group(function () {
         Route::get('dashboard/metrics', [DashboardController::class, 'metrics']);
         Route::get('dashboard/quick-stats', [DashboardController::class, 'quickStats']);
         
-        // User routes
-        Route::apiResource('users', UserController::class);
-        Route::post('users/{user}/roles', [UserController::class, 'assignRoles']);
+        // User routes (admin only)
+        Route::middleware(['role:admin|super_admin'])->group(function () {
+            Route::apiResource('users', UserController::class);
+            Route::post('users/{user}/roles', [UserController::class, 'assignRoles']);
+        });
         
-        // Role routes
-        Route::apiResource('roles', RoleController::class);
-        Route::post('roles/{role}/permissions', [RoleController::class, 'syncPermissions']);
-        Route::get('permissions', [RoleController::class, 'permissions']);
+        // Role routes (admin only)
+        Route::middleware(['role:admin|super_admin'])->group(function () {
+            Route::apiResource('roles', RoleController::class);
+            Route::post('roles/{role}/permissions', [RoleController::class, 'syncPermissions']);
+            Route::get('permissions', [RoleController::class, 'permissions']);
+        });
         
-        // Customer routes
-        Route::apiResource('customers', CustomerController::class);
-        Route::get('customers-statistics', [CustomerController::class, 'statistics']);
-        Route::post('customers/{id}/sync-queue', [CustomerController::class, 'syncQueue']);
-        Route::post('customers/bulk-sync-queues', [CustomerController::class, 'bulkSyncQueues']);
+        // Customer routes (require permission)
+        Route::middleware(['permission:manage_customers'])->group(function () {
+            Route::apiResource('customers', CustomerController::class);
+            Route::get('customers-statistics', [CustomerController::class, 'statistics']);
+            Route::post('customers/{id}/sync-queue', [CustomerController::class, 'syncQueue']);
+            Route::post('customers/bulk-sync-queues', [CustomerController::class, 'bulkSyncQueues']);
+        });
         
-        // Router routes (MikroTik)
-        Route::apiResource('routers', RouterController::class);
-        Route::post('routers/{id}/test-connection', [RouterController::class, 'testConnection']);
-        Route::post('routers/{id}/sync', [RouterController::class, 'sync']);
-        Route::get('routers/{id}/setup-script', [RouterController::class, 'generateSetupScript']);
-        Route::get('routers/scripts/queue-management', [RouterController::class, 'getQueueScript']);
-        Route::post('routers/{id}/sync-dhcp', [RouterController::class, 'syncDhcpLeases']);
-        Route::get('routers/{id}/unmatched-leases', [RouterController::class, 'getUnmatchedLeases']);
+        // Router routes (MikroTik) - require permission
+        Route::middleware(['permission:manage_routers'])->group(function () {
+            Route::apiResource('routers', RouterController::class);
+            Route::post('routers/{id}/test-connection', [RouterController::class, 'testConnection']);
+            Route::post('routers/{id}/sync', [RouterController::class, 'sync']);
+            Route::get('routers/{id}/setup-script', [RouterController::class, 'generateSetupScript']);
+            Route::get('routers/scripts/queue-management', [RouterController::class, 'getQueueScript']);
+            Route::post('routers/{id}/sync-dhcp', [RouterController::class, 'syncDhcpLeases']);
+            Route::get('routers/{id}/unmatched-leases', [RouterController::class, 'getUnmatchedLeases']);
+        });
         
-        // Service Plans routes
-        Route::apiResource('service-plans', ServicePlanController::class);
+        // Service Plans routes (require permission)
+        Route::middleware(['permission:manage_plans'])->group(function () {
+            Route::apiResource('service-plans', ServicePlanController::class);
+        });
         
-        // Invoice routes
-        Route::apiResource('invoices', InvoiceController::class);
-        Route::get('invoices-statistics', [InvoiceController::class, 'statistics']);
-        Route::post('invoices/{id}/mark-sent', [InvoiceController::class, 'markAsSent']);
-        Route::post('invoices/{id}/payments', [InvoiceController::class, 'recordPayment']);
-        Route::get('invoices/{id}/pdf', [InvoiceController::class, 'downloadPdf']);
-        Route::post('invoices/generate-recurring', [InvoiceController::class, 'generateRecurring']);
+        // Invoice routes (require permission)
+        Route::middleware(['permission:manage_billing|view_billing'])->group(function () {
+            Route::get('invoices', [InvoiceController::class, 'index']);
+            Route::get('invoices/{id}', [InvoiceController::class, 'show']);
+            Route::get('invoices-statistics', [InvoiceController::class, 'statistics']);
+            Route::get('invoices/{id}/pdf', [InvoiceController::class, 'downloadPdf']);
+        });
         
-        // Payment routes
-        Route::get('payments', [PaymentController::class, 'index']);
-        Route::get('payments/{id}', [PaymentController::class, 'show']);
-        Route::get('payments-statistics', [PaymentController::class, 'statistics']);
+        Route::middleware(['permission:manage_billing'])->group(function () {
+            Route::post('invoices', [InvoiceController::class, 'store']);
+            Route::put('invoices/{id}', [InvoiceController::class, 'update']);
+            Route::delete('invoices/{id}', [InvoiceController::class, 'destroy']);
+            Route::post('invoices/{id}/mark-sent', [InvoiceController::class, 'markAsSent']);
+            Route::post('invoices/{id}/payments', [InvoiceController::class, 'recordPayment']);
+            Route::post('invoices/generate-recurring', [InvoiceController::class, 'generateRecurring']);
+        });
         
-        // Ticket routes
-        Route::apiResource('tickets', TicketController::class);
-        Route::post('tickets/{id}/assign', [TicketController::class, 'assign']);
-        Route::post('tickets/{id}/comments', [TicketController::class, 'addComment']);
-        Route::patch('tickets/{id}/status', [TicketController::class, 'updateStatus']);
-        Route::get('tickets-statistics', [TicketController::class, 'statistics']);
+        // Payment routes (require permission)
+        Route::middleware(['permission:manage_billing|view_billing'])->group(function () {
+            Route::get('payments', [PaymentController::class, 'index']);
+            Route::get('payments/{id}', [PaymentController::class, 'show']);
+            Route::get('payments-statistics', [PaymentController::class, 'statistics']);
+        });
+        
+        // Ticket routes (require permission)
+        Route::middleware(['permission:manage_tickets|view_tickets'])->group(function () {
+            Route::get('tickets', [TicketController::class, 'index']);
+            Route::get('tickets/{id}', [TicketController::class, 'show']);
+            Route::get('tickets-statistics', [TicketController::class, 'statistics']);
+        });
+        
+        Route::middleware(['permission:manage_tickets'])->group(function () {
+            Route::post('tickets', [TicketController::class, 'store']);
+            Route::put('tickets/{id}', [TicketController::class, 'update']);
+            Route::delete('tickets/{id}', [TicketController::class, 'destroy']);
+            Route::post('tickets/{id}/assign', [TicketController::class, 'assign']);
+            Route::post('tickets/{id}/comments', [TicketController::class, 'addComment']);
+            Route::patch('tickets/{id}/status', [TicketController::class, 'updateStatus']);
+        });
         
         // Report routes
         Route::get('reports/revenue', [ReportController::class, 'revenue']);

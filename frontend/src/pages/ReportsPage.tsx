@@ -72,7 +72,7 @@ const ReportsPage: React.FC = () => {
                   <DollarSign className="w-8 h-8 opacity-80" />
                   <span className="text-sm font-medium opacity-90">Total Revenue</span>
                 </div>
-                <p className="text-3xl font-bold">${revenueData?.total_revenue?.toFixed(2) || '0.00'}</p>
+                <p className="text-3xl font-bold">${Number(revenueData?.total_revenue ?? 0).toFixed(2)}</p>
                 <p className="text-sm opacity-80 mt-2">Last 30 days</p>
               </div>
 
@@ -90,7 +90,7 @@ const ReportsPage: React.FC = () => {
                   <TrendingUp className="w-8 h-8 opacity-80" />
                   <span className="text-sm font-medium opacity-90">Avg Invoice</span>
                 </div>
-                <p className="text-3xl font-bold">${revenueData?.average_invoice?.toFixed(2) || '0.00'}</p>
+                <p className="text-3xl font-bold">${Number(revenueData?.average_invoice ?? 0).toFixed(2)}</p>
                 <p className="text-sm opacity-80 mt-2">Per customer</p>
               </div>
 

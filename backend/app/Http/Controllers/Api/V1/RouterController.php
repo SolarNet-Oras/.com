@@ -232,7 +232,11 @@ class RouterController extends Controller
 
         return response()->json([
             'success' => true,
-
+            'data' => [
+                'script' => $script,
+            ],
+        ]);
+    }
 
     /**
      * Sync DHCP leases for a router
@@ -279,12 +283,6 @@ class RouterController extends Controller
         return response()->json([
             'success' => true,
             'data' => $leases,
-        ]);
-    }
-
-            'data' => [
-                'script' => $script,
-            ],
         ]);
     }
 

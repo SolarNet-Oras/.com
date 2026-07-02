@@ -25,7 +25,7 @@ class ServicePlan extends Model
     ];
 
     protected $casts = [
-        'price' => 'decimal:2',
+        'price' => 'float',
         'download_speed' => 'integer',
         'upload_speed' => 'integer',
         'burst_download' => 'integer',

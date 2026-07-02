@@ -69,83 +69,88 @@ Route::prefix('v1')->group(function () {
         });
         
         // Customer routes (require permission)
-        Route::middleware(['permission:manage_customers'])->group(function () {
-            Route::apiResource('customers', CustomerController::class);
-            Route::get('customers-statistics', [CustomerController::class, 'statistics']);
-            Route::post('customers/{id}/sync-queue', [CustomerController::class, 'syncQueue']);
-            Route::post('customers/bulk-sync-queues', [CustomerController::class, 'bulkSyncQueues']);
-        });
+        Route::get('customers-statistics', [CustomerController::class, 'statistics'])->middleware('permission:view-customers');
+        Route::apiResource('customers', CustomerController::class)->only(['index', 'show'])->middleware('permission:view-customers');
+        Route::apiResource('customers', CustomerController::class)->only(['store'])->middleware('permission:create-customers');
+        Route::apiResource('customers', CustomerController::class)->only(['update'])->middleware('permission:edit-customers');
+        Route::apiResource('customers', CustomerController::class)->only(['destroy'])->middleware('permission:delete-customers');
+        Route::post('customers/{id}/sync-queue', [CustomerController::class, 'syncQueue'])->middleware('permission:edit-customers');
+        Route::post('customers/bulk-sync-queues', [CustomerController::class, 'bulkSyncQueues'])->middleware('permission:edit-customers');
         
         // Router routes (MikroTik) - require permission
-        Route::middleware(['permission:manage_routers'])->group(function () {
-            Route::apiResource('routers', RouterController::class);
+        Route::apiResource('routers', RouterController::class)->only(['index', 'show'])->middleware('permission:view-routers');
+        Route::apiResource('routers', RouterController::class)->only(['store'])->middleware('permission:create-routers');
+        Route::apiResource('routers', RouterController::class)->only(['update'])->middleware('permission:edit-routers');
+        Route::apiResource('routers', RouterController::class)->only(['destroy'])->middleware('permission:delete-routers');
+        Route::middleware(['permission:manage-routers'])->group(function () {
             Route::post('routers/{id}/test-connection', [RouterController::class, 'testConnection']);
             Route::post('routers/{id}/sync', [RouterController::class, 'sync']);
             Route::get('routers/{id}/setup-script', [RouterController::class, 'generateSetupScript']);
             Route::get('routers/scripts/queue-management', [RouterController::class, 'getQueueScript']);
-            Route::post('routers/{id}/sync-dhcp', [RouterController::class, 'syncDhcpLeases']);
-            Route::get('routers/{id}/unmatched-leases', [RouterController::class, 'getUnmatchedLeases']);
         });
+        Route::post('routers/{id}/sync-dhcp', [RouterController::class, 'syncDhcpLeases'])->middleware('permission:sync-dhcp');
+        Route::get('routers/{id}/unmatched-leases', [RouterController::class, 'getUnmatchedLeases'])->middleware('permission:view-dhcp');
         
         // Service Plans routes (require permission)
-        Route::middleware(['permission:manage_plans'])->group(function () {
-            Route::apiResource('service-plans', ServicePlanController::class);
-        });
+        Route::apiResource('service-plans', ServicePlanController::class)->only(['index', 'show'])->middleware('permission:view-service-plans');
+        Route::apiResource('service-plans', ServicePlanController::class)->only(['store'])->middleware('permission:create-service-plans');
+        Route::apiResource('service-plans', ServicePlanController::class)->only(['update'])->middleware('permission:edit-service-plans');
+        Route::apiResource('service-plans', ServicePlanController::class)->only(['destroy'])->middleware('permission:delete-service-plans');
         
         // Invoice routes (require permission)
-        Route::middleware(['permission:manage_billing|view_billing'])->group(function () {
+        Route::middleware(['permission:view-invoices'])->group(function () {
             Route::get('invoices', [InvoiceController::class, 'index']);
-            Route::get('invoices/{id}', [InvoiceController::class, 'show']);
             Route::get('invoices-statistics', [InvoiceController::class, 'statistics']);
-            Route::get('invoices/{id}/pdf', [InvoiceController::class, 'downloadPdf']);
+            Route::get('invoices/{id}', [InvoiceController::class, 'show']);
         });
-        
-        Route::middleware(['permission:manage_billing'])->group(function () {
-            Route::post('invoices', [InvoiceController::class, 'store']);
-            Route::put('invoices/{id}', [InvoiceController::class, 'update']);
-            Route::delete('invoices/{id}', [InvoiceController::class, 'destroy']);
-            Route::post('invoices/{id}/mark-sent', [InvoiceController::class, 'markAsSent']);
-            Route::post('invoices/{id}/payments', [InvoiceController::class, 'recordPayment']);
-            Route::post('invoices/generate-recurring', [InvoiceController::class, 'generateRecurring']);
-        });
+        Route::get('invoices/{id}/pdf', [InvoiceController::class, 'downloadPdf'])->middleware('permission:download-invoices');
+        Route::post('invoices', [InvoiceController::class, 'store'])->middleware('permission:create-invoices');
+        Route::post('invoices/generate-recurring', [InvoiceController::class, 'generateRecurring'])->middleware('permission:create-invoices');
+        Route::put('invoices/{id}', [InvoiceController::class, 'update'])->middleware('permission:edit-invoices');
+        Route::post('invoices/{id}/mark-sent', [InvoiceController::class, 'markAsSent'])->middleware('permission:edit-invoices');
+        Route::delete('invoices/{id}', [InvoiceController::class, 'destroy'])->middleware('permission:delete-invoices');
+        Route::post('invoices/{id}/payments', [InvoiceController::class, 'recordPayment'])->middleware('permission:create-payments');
         
         // Payment routes (require permission)
-        Route::middleware(['permission:manage_billing|view_billing'])->group(function () {
+        Route::middleware(['permission:view-payments'])->group(function () {
             Route::get('payments', [PaymentController::class, 'index']);
-            Route::get('payments/{id}', [PaymentController::class, 'show']);
             Route::get('payments-statistics', [PaymentController::class, 'statistics']);
+            Route::get('payments/{id}', [PaymentController::class, 'show']);
         });
         
         // Ticket routes (require permission)
-        Route::middleware(['permission:manage_tickets|view_tickets'])->group(function () {
+        Route::middleware(['permission:view-tickets'])->group(function () {
             Route::get('tickets', [TicketController::class, 'index']);
-            Route::get('tickets/{id}', [TicketController::class, 'show']);
             Route::get('tickets-statistics', [TicketController::class, 'statistics']);
+            Route::get('tickets/{id}', [TicketController::class, 'show']);
+        });
+        Route::post('tickets', [TicketController::class, 'store'])->middleware('permission:create-tickets');
+        Route::put('tickets/{id}', [TicketController::class, 'update'])->middleware('permission:edit-tickets');
+        Route::delete('tickets/{id}', [TicketController::class, 'destroy'])->middleware('permission:delete-tickets');
+        Route::post('tickets/{id}/assign', [TicketController::class, 'assign'])->middleware('permission:assign-tickets');
+        Route::post('tickets/{id}/comments', [TicketController::class, 'addComment'])->middleware('permission:edit-tickets');
+        Route::patch('tickets/{id}/status', [TicketController::class, 'updateStatus'])->middleware('permission:edit-tickets|close-tickets');
+        
+        // Report routes (require permission)
+        Route::middleware(['permission:view-reports'])->group(function () {
+            Route::get('reports/revenue', [ReportController::class, 'revenue']);
+            Route::get('reports/customer-growth', [ReportController::class, 'customerGrowth']);
+            Route::get('reports/payment-methods', [ReportController::class, 'paymentMethods']);
+            Route::get('reports/service-plans', [ReportController::class, 'servicePlanPopularity']);
+            Route::get('reports/tickets', [ReportController::class, 'ticketsOverview']);
         });
         
-        Route::middleware(['permission:manage_tickets'])->group(function () {
-            Route::post('tickets', [TicketController::class, 'store']);
-            Route::put('tickets/{id}', [TicketController::class, 'update']);
-            Route::delete('tickets/{id}', [TicketController::class, 'destroy']);
-            Route::post('tickets/{id}/assign', [TicketController::class, 'assign']);
-            Route::post('tickets/{id}/comments', [TicketController::class, 'addComment']);
-            Route::patch('tickets/{id}/status', [TicketController::class, 'updateStatus']);
+        // HSGQ OLT routes (require permission)
+        Route::middleware(['permission:view-routers'])->group(function () {
+            Route::get('hsgq-olt', [HsgqOltController::class, 'index']);
+            Route::get('hsgq-olt/{oltId}/onts', [HsgqOltController::class, 'getOnts']);
+            Route::get('hsgq-olt/{oltId}/onts/{ontId}/statistics', [HsgqOltController::class, 'getOntStatistics']);
         });
-        
-        // Report routes
-        Route::get('reports/revenue', [ReportController::class, 'revenue']);
-        Route::get('reports/customer-growth', [ReportController::class, 'customerGrowth']);
-        Route::get('reports/payment-methods', [ReportController::class, 'paymentMethods']);
-        Route::get('reports/service-plans', [ReportController::class, 'servicePlanPopularity']);
-        Route::get('reports/tickets', [ReportController::class, 'ticketsOverview']);
-        
-        // HSGQ OLT routes
-        Route::get('hsgq-olt', [HsgqOltController::class, 'index']);
-        Route::get('hsgq-olt/{oltId}/onts', [HsgqOltController::class, 'getOnts']);
-        Route::post('hsgq-olt/{oltId}/discover', [HsgqOltController::class, 'discoverOnts']);
-        Route::post('hsgq-olt/{oltId}/onts/{ontId}/authorize', [HsgqOltController::class, 'authorizeOnt']);
-        Route::post('hsgq-olt/{oltId}/onts/{ontId}/reboot', [HsgqOltController::class, 'rebootOnt']);
-        Route::get('hsgq-olt/{oltId}/onts/{ontId}/statistics', [HsgqOltController::class, 'getOntStatistics']);
+        Route::middleware(['permission:manage-routers'])->group(function () {
+            Route::post('hsgq-olt/{oltId}/discover', [HsgqOltController::class, 'discoverOnts']);
+            Route::post('hsgq-olt/{oltId}/onts/{ontId}/authorize', [HsgqOltController::class, 'authorizeOnt']);
+            Route::post('hsgq-olt/{oltId}/onts/{ontId}/reboot', [HsgqOltController::class, 'rebootOnt']);
+        });
     });
 
     // Customer Portal Routes (separate auth)

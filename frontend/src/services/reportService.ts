@@ -2,33 +2,33 @@ import api from './api';
 
 export const reportService = {
   getRevenueReport: async (startDate?: string, endDate?: string): Promise<any> => {
-    const response = await api.get('/api/v1/reports/revenue', {
+    const response = await api.get('/reports/revenue', {
       params: { start_date: startDate, end_date: endDate },
     });
     return response.data;
   },
 
   getCustomerGrowth: async (startDate?: string, endDate?: string): Promise<any> => {
-    const response = await api.get('/api/v1/reports/customer-growth', {
+    const response = await api.get('/reports/customer-growth', {
       params: { start_date: startDate, end_date: endDate },
     });
     return response.data;
   },
 
   getPaymentMethods: async (startDate?: string, endDate?: string): Promise<any> => {
-    const response = await api.get('/api/v1/reports/payment-methods', {
+    const response = await api.get('/reports/payment-methods', {
       params: { start_date: startDate, end_date: endDate },
     });
     return response.data;
   },
 
   getServicePlanPopularity: async (): Promise<any> => {
-    const response = await api.get('/api/v1/reports/service-plans');
+    const response = await api.get('/reports/service-plans');
     return response.data;
   },
 
   getTicketsOverview: async (startDate?: string, endDate?: string): Promise<any> => {
-    const response = await api.get('/api/v1/reports/tickets', {
+    const response = await api.get('/reports/tickets', {
       params: { start_date: startDate, end_date: endDate },
     });
     return response.data;

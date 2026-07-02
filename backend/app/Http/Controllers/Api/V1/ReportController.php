@@ -27,9 +27,9 @@ class ReportController extends Controller
                          ->orderBy('date')
                          ->get();
 
-        $totalRevenue = Payment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
+        $totalRevenue = (float) Payment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
         $invoiceCount = Invoice::whereBetween('issue_date', [$startDate, $endDate])->count();
-        $averageInvoice = $invoiceCount > 0 ? $totalRevenue / $invoiceCount : 0;
+        $averageInvoice = $invoiceCount > 0 ? round($totalRevenue / $invoiceCount, 2) : 0;
 
         return response()->json([
             'daily_revenue' => $revenue,
@@ -49,7 +49,7 @@ class ReportController extends Controller
         $endDate = $request->get('end_date', now());
 
         $growth = Customer::whereBetween('created_at', [$startDate, $endDate])
-                         ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, COUNT(*) as count')
+                         ->selectRaw("TO_CHAR(created_at, 'YYYY-MM') as month, COUNT(*) as count")
                          ->groupBy('month')
                          ->orderBy('month')
                          ->get();
@@ -119,7 +119,7 @@ class ReportController extends Controller
                                   ->get(),
             'avg_resolution_time' => Ticket::whereNotNull('resolved_at')
                                           ->whereBetween('created_at', [$startDate, $endDate])
-                                          ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, created_at, resolved_at)) as hours')
+                                          ->selectRaw('AVG(EXTRACT(EPOCH FROM (resolved_at - created_at)) / 3600) as hours')
                                           ->value('hours'),
         ];
 

@@ -14,7 +14,7 @@ export const paymentService = {
     page?: number;
     per_page?: number;
   }): Promise<PaginatedResponse<Payment>> => {
-    const response = await api.get('/api/v1/payments', { params });
+    const response = await api.get('/payments', { params });
     return response.data;
   },
 
@@ -22,7 +22,7 @@ export const paymentService = {
    * Get a single payment by ID
    */
   getPayment: async (id: string): Promise<Payment> => {
-    const response = await api.get(`/api/v1/payments/${id}`);
+    const response = await api.get(`/payments/${id}`);
     return response.data;
   },
 
@@ -33,7 +33,7 @@ export const paymentService = {
     from_date?: string;
     to_date?: string;
   }): Promise<PaymentStatistics> => {
-    const response = await api.get('/api/v1/payments-statistics', { params });
+    const response = await api.get('/payments-statistics', { params });
     return response.data;
   },
 };

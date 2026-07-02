@@ -52,7 +52,7 @@ class Customer extends Model
         return [
             'gps_coordinates' => 'array',
             'documents' => 'array',
-            'monthly_fee' => 'decimal:2',
+            'monthly_fee' => 'float',
             'installation_date' => 'date',
             'queue_synced' => 'boolean',
             'queue_last_synced_at' => 'datetime',

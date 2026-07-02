@@ -10,7 +10,7 @@ export const customerPortalService = {
     access_token: string;
     token_type: string;
   }> => {
-    const response = await api.post('/api/v1/customer-portal/login', {
+    const response = await api.post('/customer-portal/login', {
       email,
       account_number: accountNumber,
     });
@@ -33,7 +33,7 @@ export const customerPortalService = {
       } | null;
     };
   }> => {
-    const response = await api.get('/api/v1/customer-portal/dashboard');
+    const response = await api.get('/customer-portal/dashboard');
     return response.data;
   },
 
@@ -45,7 +45,7 @@ export const customerPortalService = {
     page?: number;
     per_page?: number;
   }): Promise<PaginatedResponse<Invoice>> => {
-    const response = await api.get('/api/v1/customer-portal/invoices', { params });
+    const response = await api.get('/customer-portal/invoices', { params });
     return response.data;
   },
 
@@ -53,7 +53,7 @@ export const customerPortalService = {
    * Get single invoice
    */
   getInvoice: async (id: string): Promise<Invoice> => {
-    const response = await api.get(`/api/v1/customer-portal/invoices/${id}`);
+    const response = await api.get(`/customer-portal/invoices/${id}`);
     return response.data;
   },
 
@@ -64,7 +64,7 @@ export const customerPortalService = {
     page?: number;
     per_page?: number;
   }): Promise<PaginatedResponse<Payment>> => {
-    const response = await api.get('/api/v1/customer-portal/payments', { params });
+    const response = await api.get('/customer-portal/payments', { params });
     return response.data;
   },
 
@@ -76,7 +76,7 @@ export const customerPortalService = {
     address?: string;
     gps_coordinates?: { latitude: number; longitude: number };
   }): Promise<{ customer: Customer }> => {
-    const response = await api.put('/api/v1/customer-portal/profile', data);
+    const response = await api.put('/customer-portal/profile', data);
     return response.data;
   },
 };

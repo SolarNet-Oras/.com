@@ -25,8 +25,16 @@ class CheckRole
 
         $user = auth()->user();
 
+        // Support pipe-separated role alternatives, e.g. 'role:admin|super_admin'
+        $roleNames = [];
+        foreach ($roles as $role) {
+            foreach (explode('|', $role) as $roleName) {
+                $roleNames[] = $roleName;
+            }
+        }
+
         // Check if user has any of the required roles
-        if (!$user->hasAnyRole($roles)) {
+        if (!$user->hasAnyRole($roleNames)) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Insufficient permissions. Required role: ' . implode(' or ', $roles),

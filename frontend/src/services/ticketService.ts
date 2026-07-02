@@ -11,27 +11,27 @@ export const ticketService = {
     page?: number;
     per_page?: number;
   }): Promise<PaginatedResponse<Ticket>> => {
-    const response = await api.get('/api/v1/tickets', { params });
+    const response = await api.get('/tickets', { params });
     return response.data;
   },
 
   getTicket: async (id: string): Promise<Ticket> => {
-    const response = await api.get(`/api/v1/tickets/${id}`);
+    const response = await api.get(`/tickets/${id}`);
     return response.data;
   },
 
   createTicket: async (data: CreateTicketRequest): Promise<{ message: string; ticket: Ticket }> => {
-    const response = await api.post('/api/v1/tickets', data);
+    const response = await api.post('/tickets', data);
     return response.data;
   },
 
   assignTicket: async (ticketId: string, userId: string): Promise<{ message: string; ticket: Ticket }> => {
-    const response = await api.post(`/api/v1/tickets/${ticketId}/assign`, { user_id: userId });
+    const response = await api.post(`/tickets/${ticketId}/assign`, { user_id: userId });
     return response.data;
   },
 
   addComment: async (ticketId: string, comment: string, isInternal: boolean = false): Promise<any> => {
-    const response = await api.post(`/api/v1/tickets/${ticketId}/comments`, {
+    const response = await api.post(`/tickets/${ticketId}/comments`, {
       comment,
       is_internal: isInternal,
     });
@@ -39,12 +39,12 @@ export const ticketService = {
   },
 
   updateStatus: async (ticketId: string, status: string): Promise<{ message: string; ticket: Ticket }> => {
-    const response = await api.patch(`/api/v1/tickets/${ticketId}/status`, { status });
+    const response = await api.patch(`/tickets/${ticketId}/status`, { status });
     return response.data;
   },
 
   getStatistics: async (): Promise<TicketStatistics> => {
-    const response = await api.get('/api/v1/tickets-statistics');
+    const response = await api.get('/tickets-statistics');
     return response.data;
   },
 };

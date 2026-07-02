@@ -22,7 +22,7 @@ export const invoiceService = {
     page?: number;
     per_page?: number;
   }): Promise<PaginatedResponse<Invoice>> => {
-    const response = await api.get('/api/v1/invoices', { params });
+    const response = await api.get('/invoices', { params });
     return response.data;
   },
 
@@ -30,7 +30,7 @@ export const invoiceService = {
    * Get a single invoice by ID
    */
   getInvoice: async (id: string): Promise<Invoice> => {
-    const response = await api.get(`/api/v1/invoices/${id}`);
+    const response = await api.get(`/invoices/${id}`);
     return response.data;
   },
 
@@ -38,7 +38,7 @@ export const invoiceService = {
    * Create/Generate a new invoice
    */
   createInvoice: async (data: CreateInvoiceRequest): Promise<{ message: string; invoice: Invoice }> => {
-    const response = await api.post('/api/v1/invoices', data);
+    const response = await api.post('/invoices', data);
     return response.data;
   },
 
@@ -54,7 +54,7 @@ export const invoiceService = {
       notes?: string;
     }
   ): Promise<{ message: string; invoice: Invoice }> => {
-    const response = await api.put(`/api/v1/invoices/${id}`, data);
+    const response = await api.put(`/invoices/${id}`, data);
     return response.data;
   },
 
@@ -62,7 +62,7 @@ export const invoiceService = {
    * Delete/Cancel an invoice
    */
   deleteInvoice: async (id: string): Promise<{ message: string }> => {
-    const response = await api.delete(`/api/v1/invoices/${id}`);
+    const response = await api.delete(`/invoices/${id}`);
     return response.data;
   },
 
@@ -70,7 +70,7 @@ export const invoiceService = {
    * Mark invoice as sent
    */
   markAsSent: async (id: string): Promise<{ message: string; invoice: Invoice }> => {
-    const response = await api.post(`/api/v1/invoices/${id}/mark-sent`);
+    const response = await api.post(`/invoices/${id}/mark-sent`);
     return response.data;
   },
 
@@ -81,7 +81,7 @@ export const invoiceService = {
     invoiceId: string,
     data: RecordPaymentRequest
   ): Promise<{ message: string; payment: Payment; invoice: Invoice }> => {
-    const response = await api.post(`/api/v1/invoices/${invoiceId}/payments`, data);
+    const response = await api.post(`/invoices/${invoiceId}/payments`, data);
     return response.data;
   },
 
@@ -89,7 +89,7 @@ export const invoiceService = {
    * Download invoice PDF
    */
   downloadPdf: async (id: string): Promise<Blob> => {
-    const response = await api.get(`/api/v1/invoices/${id}/pdf`, {
+    const response = await api.get(`/invoices/${id}/pdf`, {
       responseType: 'blob',
     });
     return response.data;
@@ -107,7 +107,7 @@ export const invoiceService = {
       errors: any[];
     };
   }> => {
-    const response = await api.post('/api/v1/invoices/generate-recurring', {
+    const response = await api.post('/invoices/generate-recurring', {
       billing_date: billingDate,
     });
     return response.data;
@@ -120,7 +120,7 @@ export const invoiceService = {
     from_date?: string;
     to_date?: string;
   }): Promise<InvoiceStatistics> => {
-    const response = await api.get('/api/v1/invoices-statistics', { params });
+    const response = await api.get('/invoices-statistics', { params });
     return response.data;
   },
 };

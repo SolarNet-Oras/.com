@@ -25,9 +25,20 @@ class CheckPermission
 
         $user = auth()->user();
 
-        // Check if user has all required permissions
+        // Each parameter is required (AND). Within a parameter, pipe-separated
+        // permissions are alternatives (OR), e.g. 'edit-tickets|close-tickets'.
         foreach ($permissions as $permission) {
-            if (!$user->hasPermission($permission)) {
+            $alternatives = explode('|', $permission);
+            $hasAny = false;
+
+            foreach ($alternatives as $alternative) {
+                if ($user->hasPermission($alternative)) {
+                    $hasAny = true;
+                    break;
+                }
+            }
+
+            if (!$hasAny) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Insufficient permissions. Required permission: ' . $permission,

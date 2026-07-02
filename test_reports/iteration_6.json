@@ -1,0 +1,31 @@
+{
+  "summary": "Comprehensive backend + frontend testing of ISP Billing (Laravel + React). Backend: 31/31 pytest tests PASS (100%) — Auth, RBAC (unauth 401, low-priv 403 on users/reports/customer-delete, low-priv CAN create tickets), Ticketing (Phase 8: create/list/get/comment/assign/status->resolved with resolved_at/statistics), Reports (Phase 9: revenue/customer-growth/payment-methods/service-plans/tickets all 200; total_revenue is JSON number 32.39), HSGQ OLT (Phase 10 mock: list/onts/discover/reboot), Invoicing (Phase 6 regression: subtotal 29.99 -> tax 2.40 -> total 32.39 as JSON numbers, cash payment marks invoice paid, PDF is real %PDF), Customer Portal API (Phase 7: portal login + dashboard/invoices/payments with token, 401 without). Frontend admin flows PASS: /login -> /dashboard, /tickets shows TKT-202607-0001..0006, /billing shows 5 invoices at $32.39, /reports shows Total Revenue $32.39, /customers lists Jane Doe ACC-0002, /service-plans lists Basic 10Mbps, /users renders, /network-devices renders without crash, 0 console/page errors. CRITICAL FRONTEND BUG: /customer-login route does NOT render CustomerLoginPage — it renders the standard admin login (email+password, no account_number field), so customer portal login is unreachable from the UI. Also minor: /network-devices shows 'OLT Devices — Coming Soon' even though backend HSGQ OLT endpoints work.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "CustomerLoginPage / router", "issue": "GET /customer-login serves the admin LoginPage (Email+Password only, no account_number input). Submitting jane.doe@test.com + 'password' hits /api/v1/auth/login -> 'Invalid credentials'. Customer portal is inaccessible via UI even though POST /api/v1/customer-portal/login works with {email, account_number}. Root cause is almost certainly a missing route entry in App.tsx (or CustomerLoginPage not imported/mounted) — verify router config maps /customer-login to CustomerLoginPage.tsx.", "selector": "route /customer-login", "priority": "HIGH"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Network Devices", "issues": ["'OLT Devices' tab shows 'Coming Soon' even though backend HSGQ OLT endpoints (list/onts/discover/reboot) already return mock data. Consider wiring the OLT tab to /api/v1/hsgq-olt."]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/backend_api_test.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "Fix /customer-login route in frontend App/router to render CustomerLoginPage.tsx (with account_number field) instead of falling back to admin LoginPage.",
+    "(Nice-to-have) Wire the Network Devices > OLT Devices tab to the working /api/v1/hsgq-olt mock endpoints and remove 'Coming Soon'."
+  ],
+  "critical_code_review_comments": [
+    "Ticket/Invoice controllers return the resource under mixed root keys ('ticket', 'invoice') instead of a consistent 'data' envelope used by list endpoints — this asymmetry is easy to break frontend/typing; consider standardising response shapes.",
+    "HSGQ OLT list endpoint returns a bare JSON array instead of the {status, data} envelope used everywhere else — inconsistent contract.",
+    "PHPUnit-style file /app/backend/tests/TestCase.php exists but Feature/Unit dirs are empty; consider adding smoke Feature tests alongside these pytest API tests."
+  ],
+  "updated_files": ["/app/backend/tests/backend_api_test.py"],
+  "success_rate": {"backend": "100%", "frontend": "~90% (customer portal login page missing)"},
+  "test_credentials": "admin@ispbilling.local/password (admin, works); lowpriv@test.com/password123 (customer role, works); jane.doe@test.com + ACC-0002 (customer portal, backend works, frontend page missing).",
+  "seed_data_creation": "Tests created a few additional tickets (TKT-202607-0003..0006) and invoices (INV-202607-0002..0005) plus 1 cash payment as byproduct. No cleanup performed (single-tenant demo DB).",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend is fully green. The only failing area is the frontend /customer-login route which shows admin login instead of the customer portal form. Once fixed, retest by navigating to /customer-login, entering jane.doe@test.com + ACC-0002 and confirming the customer dashboard loads with plan + invoice info. All other admin pages already verified.",
+  "rca of the issue": "Frontend /customer-login route mis-configured: React Router likely lacks a <Route path='/customer-login' element={<CustomerLoginPage/>} /> or the customer route is shadowed by the catch-all admin /login route. Reproduction: open <PREVIEW_URL>/customer-login -> observe admin login form (only Email+Password, no Account Number). Mitigation: add/verify explicit route in App.tsx mapping /customer-login to CustomerLoginPage; ensure CustomerLoginPage.tsx uses POST /api/v1/customer-portal/login with {email, account_number}; on success store token separately and redirect to /customer-portal/dashboard."
+}

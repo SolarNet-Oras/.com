@@ -11,7 +11,7 @@ export const customerService = {
     page?: number;
     per_page?: number;
   }): Promise<PaginatedResponse<Customer>> => {
-    const response = await api.get('/api/v1/customers', { params });
+    const response = await api.get('/customers', { params });
     return response.data;
   },
 
@@ -19,7 +19,7 @@ export const customerService = {
    * Get a single customer by ID
    */
   getCustomer: async (id: string): Promise<Customer> => {
-    const response = await api.get(`/api/v1/customers/${id}`);
+    const response = await api.get(`/customers/${id}`);
     return response.data;
   },
 };

@@ -74,7 +74,8 @@ const InvoicesPage: React.FC = () => {
 
       const response = await invoiceService.getInvoices(params);
       setInvoices(response.data);
-      setTotalPages(response.meta.last_page);
+      const raw = response as unknown as { meta?: { last_page?: number }; last_page?: number };
+      setTotalPages(raw.meta?.last_page ?? raw.last_page ?? 1);
     } catch (error) {
       console.error('Error fetching invoices:', error);
     } finally {

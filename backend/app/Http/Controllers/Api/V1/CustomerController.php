@@ -238,15 +238,4 @@ class CustomerController extends Controller
             'data' => $result,
         ]);
     }
-
-            'suspended' => Customer::suspended()->count(),
-            'expired' => Customer::expired()->count(),
-            'pending' => Customer::where('status', 'pending')->count(),
-        ];
-
-        return response()->json([
-            'status' => 'success',
-            'data' => $stats,
-        ]);
-    }
 }

@@ -6,9 +6,11 @@ use App\Http\Controllers\Api\V1\CustomerPortalController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\InvoiceController;
 use App\Http\Controllers\Api\V1\PaymentController;
+use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\RoleController;
 use App\Http\Controllers\Api\V1\RouterController;
 use App\Http\Controllers\Api\V1\ServicePlanController;
+use App\Http\Controllers\Api\V1\TicketController;
 use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -91,6 +93,20 @@ Route::prefix('v1')->group(function () {
         Route::get('payments', [PaymentController::class, 'index']);
         Route::get('payments/{id}', [PaymentController::class, 'show']);
         Route::get('payments-statistics', [PaymentController::class, 'statistics']);
+        
+        // Ticket routes
+        Route::apiResource('tickets', TicketController::class);
+        Route::post('tickets/{id}/assign', [TicketController::class, 'assign']);
+        Route::post('tickets/{id}/comments', [TicketController::class, 'addComment']);
+        Route::patch('tickets/{id}/status', [TicketController::class, 'updateStatus']);
+        Route::get('tickets-statistics', [TicketController::class, 'statistics']);
+        
+        // Report routes
+        Route::get('reports/revenue', [ReportController::class, 'revenue']);
+        Route::get('reports/customer-growth', [ReportController::class, 'customerGrowth']);
+        Route::get('reports/payment-methods', [ReportController::class, 'paymentMethods']);
+        Route::get('reports/service-plans', [ReportController::class, 'servicePlanPopularity']);
+        Route::get('reports/tickets', [ReportController::class, 'ticketsOverview']);
     });
 
     // Customer Portal Routes (separate auth)

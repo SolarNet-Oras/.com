@@ -246,6 +246,60 @@ export interface DhcpLease {
 }
 
 // ============================================================================
+// Ticket Types
+// ============================================================================
+
+export interface TicketComment {
+  id: string;
+  ticket_id: string;
+  user_id: string | null;
+  customer_id: string | null;
+  user?: User;
+  customer?: Customer;
+  comment: string;
+  is_internal: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Ticket {
+  id: string;
+  ticket_number: string;
+  customer_id: string;
+  assigned_to: string | null;
+  customer?: Customer;
+  assignedTo?: User;
+  subject: string;
+  description: string;
+  status: 'open' | 'in_progress' | 'resolved' | 'closed';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  category: 'technical' | 'billing' | 'general' | 'network_issue';
+  resolved_at: string | null;
+  closed_at: string | null;
+  comments?: TicketComment[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateTicketRequest {
+  customer_id: string;
+  subject: string;
+  description: string;
+  priority?: 'low' | 'medium' | 'high' | 'urgent';
+  category?: 'technical' | 'billing' | 'general' | 'network_issue';
+}
+
+export interface TicketStatistics {
+  total: number;
+  open: number;
+  in_progress: number;
+  resolved: number;
+  closed: number;
+  urgent: number;
+  unassigned: number;
+}
+
+// ============================================================================
 // Invoice & Payment Types
 // ============================================================================
 

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CustomerController;
+use App\Http\Controllers\Api\V1\CustomerPortalController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\InvoiceController;
 use App\Http\Controllers\Api\V1\PaymentController;
@@ -90,5 +91,20 @@ Route::prefix('v1')->group(function () {
         Route::get('payments', [PaymentController::class, 'index']);
         Route::get('payments/{id}', [PaymentController::class, 'show']);
         Route::get('payments-statistics', [PaymentController::class, 'statistics']);
+    });
+
+    // Customer Portal Routes (separate auth)
+    Route::prefix('customer-portal')->group(function () {
+        // Public customer login
+        Route::post('login', [CustomerPortalController::class, 'login']);
+
+        // Protected customer routes
+        Route::middleware('api')->group(function () {
+            Route::get('dashboard', [CustomerPortalController::class, 'dashboard']);
+            Route::get('invoices', [CustomerPortalController::class, 'invoices']);
+            Route::get('invoices/{id}', [CustomerPortalController::class, 'invoice']);
+            Route::get('payments', [CustomerPortalController::class, 'payments']);
+            Route::put('profile', [CustomerPortalController::class, 'updateProfile']);
+        });
     });
 });

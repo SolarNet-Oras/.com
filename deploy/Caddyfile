@@ -1,0 +1,39 @@
+{
+    email {$ACME_EMAIL}
+    servers {
+        protocols h1 h2 h3
+    }
+}
+
+{$DOMAIN} {
+    encode zstd gzip
+
+    # API + Sanctum + Laravel routes -> backend nginx
+    @api {
+        path /api/*
+        path /sanctum/*
+        path /storage/*
+        path /docs*
+    }
+    handle @api {
+        reverse_proxy backend-nginx:80
+    }
+
+    # Everything else -> React SPA
+    handle {
+        reverse_proxy frontend:80
+    }
+
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        Referrer-Policy strict-origin-when-cross-origin
+        -Server
+    }
+
+    log {
+        output stdout
+        format console
+    }
+}

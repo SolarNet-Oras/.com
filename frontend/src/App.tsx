@@ -11,6 +11,8 @@ import CreateCustomerPage from '@/pages/CreateCustomerPage';
 import { NetworkDevicesPage } from '@/pages/NetworkDevicesPage';
 import { ServicePlansPage } from '@/pages/ServicePlansPage';
 import InvoicesPage from '@/pages/InvoicesPage';
+import TicketsPage from '@/pages/TicketsPage';
+import ReportsPage from '@/pages/ReportsPage';
 import CustomerLoginPage from '@/pages/CustomerLoginPage';
 import CustomerDashboardPage from '@/pages/CustomerDashboardPage';
 
@@ -74,6 +76,24 @@ const App: React.FC = (): JSX.Element => {
                 element={
                   <ProtectedRoute>
                     <InvoicesPage />
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/tickets"
+                element={
+                  <ProtectedRoute>
+                    <TicketsPage />
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/reports"
+                element={
+                  <ProtectedRoute>
+                    <ReportsPage />
                   </ProtectedRoute>
                 }
               />

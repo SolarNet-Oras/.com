@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CustomerController;
 use App\Http\Controllers\Api\V1\CustomerPortalController;
 use App\Http\Controllers\Api\V1\DashboardController;
+use App\Http\Controllers\Api\V1\HsgqOltController;
 use App\Http\Controllers\Api\V1\InvoiceController;
 use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\ReportController;
@@ -107,6 +108,14 @@ Route::prefix('v1')->group(function () {
         Route::get('reports/payment-methods', [ReportController::class, 'paymentMethods']);
         Route::get('reports/service-plans', [ReportController::class, 'servicePlanPopularity']);
         Route::get('reports/tickets', [ReportController::class, 'ticketsOverview']);
+        
+        // HSGQ OLT routes
+        Route::get('hsgq-olt', [HsgqOltController::class, 'index']);
+        Route::get('hsgq-olt/{oltId}/onts', [HsgqOltController::class, 'getOnts']);
+        Route::post('hsgq-olt/{oltId}/discover', [HsgqOltController::class, 'discoverOnts']);
+        Route::post('hsgq-olt/{oltId}/onts/{ontId}/authorize', [HsgqOltController::class, 'authorizeOnt']);
+        Route::post('hsgq-olt/{oltId}/onts/{ontId}/reboot', [HsgqOltController::class, 'rebootOnt']);
+        Route::get('hsgq-olt/{oltId}/onts/{ontId}/statistics', [HsgqOltController::class, 'getOntStatistics']);
     });
 
     // Customer Portal Routes (separate auth)

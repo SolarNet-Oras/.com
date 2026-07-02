@@ -51,7 +51,11 @@ export const api: AxiosInstance = axios.create({
  */
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
-    const token = tokenStorage.getToken();
+    // Customer portal requests use their own token (stored at portal login)
+    const isCustomerPortal = (config.url ?? '').includes('customer-portal');
+    const token = isCustomerPortal
+      ? localStorage.getItem('customer_token')
+      : tokenStorage.getToken();
     
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -89,6 +93,18 @@ api.interceptors.response.use(
 
     // Handle 401 Unauthorized - User session expired
     if (error.response?.status === HTTP_STATUS.UNAUTHORIZED) {
+      const isCustomerPortal = (originalRequest?.url ?? '').includes('customer-portal');
+
+      if (isCustomerPortal) {
+        // Customer portal session expired - send back to the portal login
+        localStorage.removeItem('customer_token');
+        localStorage.removeItem('customer_data');
+        if (window.location.pathname !== '/customer/login') {
+          window.location.href = '/customer/login';
+        }
+        return Promise.reject(error);
+      }
+
       // Clear authentication data
       tokenStorage.clearAll();
       
